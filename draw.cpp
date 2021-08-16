@@ -14,8 +14,8 @@ TODO: switch to tile map eventually tm
 */
 
 void draw_current_map() {
-    int dx = 20 - player.x;
-    int dy = 15 - player.y;
+    int dx = 20 - player->get_x();
+    int dy = 15 - player->get_y();
     for (uint32_t y = 0; y < current_map->get_height(); y++) {
         for (uint32_t x = 0; x < current_map->get_width(); x++) {
             uint8_t t = current_map->get_tile_at(x, y);
@@ -26,12 +26,13 @@ void draw_current_map() {
 }
 
 void draw_entities() {
-    int dx = 20 - player.x;
-    int dy = 15 - player.y;
+    int dx = 20 - player->get_x();
+    int dy = 15 - player->get_y();
     current_map->acquire();
-    std::vector<Entity>* entities = current_map->_get_m_entities();
-    for (Entity& e : (*entities)) {
-        jumpwr_xyt(e.get_x() + dx, e.get_y() + dy, e.get_texture());
+    std::vector<Entity*>* entities = current_map->_get_m_entities();
+    for (Entity* e : (*entities)) {
+        if (e->get_type() < 0) continue;
+        jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, e->get_texture());
     }
     current_map->release();
 }
@@ -60,7 +61,7 @@ void draw_hud() {
     renderWindow->draw(held_item_frame);
 
     sf::Sprite held_item;
-    held_item.setTexture(textures.at(player.held_item_texture));
+    held_item.setTexture(textures.at(player->get_held_item_texture()));
     held_item.setPosition(32 + 4 + xoff, 32 + 12);
     held_item.setScale(1.5f, 1.5f); // (128 / 4) = 32
     renderWindow->draw(held_item);
@@ -75,13 +76,13 @@ void draw_hud() {
     renderWindow->draw(off_item_frame);
 
     sf::Sprite off_item;
-    off_item.setTexture(textures.at(player.off_item_texture));
+    off_item.setTexture(textures.at(player->get_off_item_texture()));
     off_item.setPosition(80 + 4 + xoff, 32 + 12);
     off_item.setScale(1.5f, 1.5f); // (128 / 4) = 32
     renderWindow->draw(off_item);
 
     sf::Text coin_count;
-    sprintf(tmp, " COINS x%.3d", player.coin_count);
+    sprintf(tmp, " COINS x%.3d", player->get_coin_count());
     coin_count.setString(tmp);
     coin_count.setCharacterSize(14);
     coin_count.setPosition(128 + xoff, 32);
@@ -90,7 +91,7 @@ void draw_hud() {
     renderWindow->draw(coin_count);
 
     sf::Text plank_count;
-    sprintf(tmp, "PLANKS x%.3d", player.planks_count);
+    sprintf(tmp, "PLANKS x%.3d", player->get_planks_count());
     plank_count.setString(tmp);
     plank_count.setCharacterSize(14);
     plank_count.setPosition(128 + xoff, 64);
@@ -111,12 +112,14 @@ void draw_hud() {
     timer_text.setFont(font);
     renderWindow->draw(timer_text);
 
-    for (int i = 0; i < player.hearts; i++) {
-        sf::Sprite heart;
-        heart.setTexture(textures.at(T_HEART));
-        heart.setPosition(256 + i * 16 * 1.5 + xoff, 32);
-        heart.setScale(1.5f, 1.5f); // (128 / 4) = 32
-        renderWindow->draw(heart);
+    if (player->get_hearts() > 0) {
+        for (int i = 0; i < player->get_hearts(); i++) {
+            sf::Sprite heart;
+            heart.setTexture(textures.at(T_HEART));
+            heart.setPosition(256 + i * 16 * 1.5 + xoff, 32);
+            heart.setScale(1.5f, 1.5f); // (128 / 4) = 32
+            renderWindow->draw(heart);
+        }
     }
 
     sf::Sprite key_label;
@@ -259,41 +262,51 @@ void draw_credits() {
     */
     text.setString("PROGRAMMING, ENGINE, CONCEPT");
     fr = text.getLocalBounds();
-    text.setPosition(640 - fr.width, 0);
+    text.setPosition(640 - fr.width - 10, 10);
     text.setFillColor(sf::Color(128, 128, 128, 255));
     renderTexture.draw(text);
 
     text.setString("HENRY OLLING");
     fr = text.getLocalBounds();
-    text.setPosition(640 - fr.width, 16);
+    text.setPosition(640 - fr.width - 10, 26);
     text.setFillColor(sf::Color(255, 255, 255));
     renderTexture.draw(text);
 
     text.setString("ASSETS, CONCEPT");
     fr = text.getLocalBounds();
-    text.setPosition(640 - fr.width, 48);
+    text.setPosition(640 - fr.width - 10, 58);
     text.setFillColor(sf::Color(128, 128, 128, 255));
     renderTexture.draw(text);
 
     text.setString("JOCQUE JEFFERSON");
     fr = text.getLocalBounds();
-    text.setPosition(640 - fr.width, 64);
+    text.setPosition(640 - fr.width - 10, 74);
     text.setFillColor(sf::Color(255, 255, 255));
     renderTexture.draw(text);
 
     text.setString("ASSETS");
     fr = text.getLocalBounds();
-    text.setPosition(640 - fr.width, 96);
+    text.setPosition(640 - fr.width - 10, 106);
     text.setFillColor(sf::Color(128, 128, 128, 255));
     renderTexture.draw(text);
 
     text.setString("@capiwak");
     fr = text.getLocalBounds();
-    text.setPosition(640 - fr.width, 112);
+    text.setPosition(640 - fr.width - 10, 122);
     text.setFillColor(sf::Color(255, 255, 255));
     renderTexture.draw(text);
 
-    // TODO ask jocque for other artist credits
+    text.setString("ASSETS");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 154);
+    text.setFillColor(sf::Color(128, 128, 128, 255));
+    renderTexture.draw(text);
+
+    text.setString("opengameart.org");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 170);
+    text.setFillColor(sf::Color(255, 255, 255));
+    renderTexture.draw(text);
 }
 
 /*
@@ -377,6 +390,35 @@ void draw_opening_curscene() {
     text.setFillColor(sf::Color(255, 255, 255));
     text.setFont(font);
     text.setPosition(10 + 32, 480 - 32);
+    renderTexture.draw(text);
+
+    text.setString("GOD HAS TOLD YOU TO MAKE AN ARK.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 300);
+    renderTexture.draw(text);
+    text.setString("YOU MUST GET PLANKS TO BUILD IT.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 316);
+    renderTexture.draw(text);
+    text.setString("AND YOU MUST PUT TWO OF EACH ANIMAL");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 332);
+    renderTexture.draw(text);
+    text.setString("INSIDE OF THE ARK. WHEN THE TIMER");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 348);
+    renderTexture.draw(text);
+    text.setString("RUNS OUT THE WATERS WILL RISE.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 364);
+    renderTexture.draw(text);
+    text.setString("BEWARE OF THE LOCALS FOR THEY ARE");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 380);
+    renderTexture.draw(text);
+    text.setString("NOT FOLLOWERS OF YOUR GOD.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 396);
     renderTexture.draw(text);
 }
 

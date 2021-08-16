@@ -14,7 +14,7 @@ sf::RenderTexture renderTexture;
 sf::RenderWindow* renderWindow;
 
 // entity information
-player_t player;
+Player* player;
 uint32_t g_next_uuid = 0xA;
 
 // global state information
@@ -37,6 +37,7 @@ int game_state = 0;
 Map* current_map;
 std::mutex map_mutex;
 Config* config;
+ark_t ark;
 
 // menu information
 int current_menu_sel = 0;
@@ -60,7 +61,7 @@ void edit_timer_state(bool state) {
 }
 
 int main() {
-    sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(SCREEN_W, SCREEN_H), "CMPM 80K Graphical");
+    sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(SCREEN_W, SCREEN_H), "CMPM 80K Graphical", sf::Style::Close);
     renderWindow = &window;
     if (!renderTexture.create(SCREEN_W, SCREEN_H)) {
         std::cout << "could not create render texture!" << std::endl;
@@ -85,21 +86,24 @@ int main() {
             }
             if (should_tick) {
                 current_map->acquire();
-                std::vector<Entity>* entities = current_map->_get_m_entities();
-                for (Entity& e : (*entities)) {
-                    e.tick_self();
+                std::vector<Entity*>* entities = current_map->_get_m_entities();
+                for (Entity* e : (*entities)) {
+                    e->tick_self();
                 }
                 current_map->release();
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(1250));
+            current_map->clean_entity_list();
         }
     });
 
     // initalize everything
     config = new Config();
     // TODO fix this (sign compare, hardcoded)
-    player = {config->get_player_sx(), config->get_player_sy(), 5, T_EMPTY, T_EMPTY, 123, 3};
+    //player = {config->get_player_sx(), config->get_player_sy(), 5, T_EMPTY, T_EMPTY, 123, 3};
     //player = {20, 20, 5, T_EMPTY, T_EMPTY, 123, 3};
+    player = new Player(20, 20, 5);
+    ark = {0, 0, 0, 0};
     // TODO make this load from startup file
     //current_map = new Map(config->get_map_id(), "__none__", config->get_map_w(), config->get_map_h());
     current_map = new Map("asset/test_map_Ground.csv", "asset/test_map_Entities.csv", config->get_map_w(), config->get_map_h());
@@ -124,8 +128,8 @@ int main() {
                 window.setView(sf::View(sf::FloatRect(0, displace, WINDOW_WIDTH, newH)));
             } else if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Tab) {
-                    std::cout << "X=" << player.x << " Y=" << player.y;
-                    std::cout << " TILE=" << (int) current_map->get_tile_at(player.x, player.y);
+                    std::cout << "X=" << player->get_x() << " Y=" << player->get_y();
+                    std::cout << " TILE=" << (int) current_map->get_tile_at(player->get_x(), player->get_y());
                     std::cout << " STATE=" << game_state << std::endl;
                 }
 
@@ -230,7 +234,9 @@ int main() {
         is_shutdown_ready = true;
     }
 
+    std::cout << "awaiting timer thread..." << std::endl;
     timer_thread.join();
+    std::cout << "goodbye." << std::endl;
 
     return 0;
 }
@@ -252,6 +258,11 @@ void process_key_play(sf::Keyboard::Key k) {
         break;
     case sf::Keyboard::Z:
         // TODO use held item
+        if (player->get_held_item_texture() != T_EMPTY) {
+            do_drop_item();
+        } else {
+            do_pickup_item();
+        }
         break;
     case sf::Keyboard::X:
         // TODO use off item

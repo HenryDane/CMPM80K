@@ -11,6 +11,7 @@
      0 -> invalid
      1 -> chest
      2 -> coin
+     3 -> heart
     12 -> cow
     13 -> pig
     14 -> sheep
@@ -25,7 +26,7 @@ private:
     friend class Entity; // awful hack to prevent having to lock certian things.....
     uint32_t width, height;
     uint8_t* data;
-    std::vector<Entity> entities;
+    std::vector<Entity*> entities;
 
     std::mutex mutex;
 public:
@@ -39,11 +40,15 @@ public:
     void set_tile_at(uint32_t w, uint32_t h, uint8_t tile);
     bool is_collideable(uint32_t w, uint32_t h, bool _lock = true);
     int get_interaction(uint32_t w, uint32_t h);
-    bool check_entity_collision(int nx, int ny, Entity& entity, bool _lock = true);
+    //bool check_entity_collision(int nx, int ny, Entity& entity, bool _lock = true);
+    Entity* check_entity_collision(int nx, int ny, bool _lock = true);
 
-    std::vector<Entity>* _get_m_entities();
+    std::vector<Entity*>* _get_m_entities();
     void acquire();
     void release();
+
+    void clean_entity_list();
+    void register_entity(Entity* e, bool _lock = true);
 };
 
 #endif // _MAP_H

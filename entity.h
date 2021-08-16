@@ -36,7 +36,7 @@ public:
     void tick_self();
 };
 
-void update_randomwalk_ai(Entity* e);
-void update_aggressive_ai(Entity* e);
+bool update_randomwalk_ai(Entity* e, int& dx, int& dy);
+bool update_aggressive_ai(Entity* e, int& dx, int& dy);
 
 #endif // _ENTITY_H

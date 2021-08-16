@@ -75,23 +75,27 @@ Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t hei
             int type = entity_data[y * this->width + x];
             if (type >= 41 && type <= 43) {
                 // animals
-                Entity e(g_next_uuid++, x, y, type - 29, type);
+                Entity* e = new Entity(g_next_uuid++, x, y, type - 29, type);
                 entities.push_back(e);
             } else if (type == 62) {
                 // planks
-                Entity e(g_next_uuid++, x, y, 20, type);
+                Entity* e = new Entity(g_next_uuid++, x, y, 20, type);
                 entities.push_back(e);
             } else if (type == 61) {
                 // chest
-                Entity e(g_next_uuid++, x, y, 1, type);
+                Entity* e = new Entity(g_next_uuid++, x, y, 1, type);
                 entities.push_back(e);
             } else if (type == 60) {
                 // coin
-                Entity e(g_next_uuid++, x, y, 2, type);
+                Entity* e = new Entity(g_next_uuid++, x, y, 2, type);
                 entities.push_back(e);
             } else if (type == 63) {
                 // coin
-                Entity e(g_next_uuid++, x, y, 22, type);
+                Entity* e = new Entity(g_next_uuid++, x, y, 22, type);
+                entities.push_back(e);
+            } else if (type == 64) {
+                // ark
+                Entity* e = new Entity(g_next_uuid++, x, y, 21, type);
                 entities.push_back(e);
             }
         }
@@ -170,33 +174,60 @@ int Map::get_interaction(uint32_t x, uint32_t y) {
 }
 
 // returns true if valid
-bool Map::check_entity_collision(int nx, int ny, Entity& entity, bool _lock) {
+Entity* Map::check_entity_collision(int nx, int ny, bool _lock) {
     //std::scoped_lock<std::mutex> lock(mutex);
     if (_lock) {
         mutex.lock();
     }
 
-    for (Entity e : entities) {
-        if (e.get_x() == nx && e.get_y() == ny) {
-            entity = e;
+    for (Entity* e : entities) {
+        if (e->get_x() == nx && e->get_y() == ny && e->get_type() > 0) {
             if (_lock) {
                 mutex.unlock();
             }
-            return true;
+            return e;
         }
     }
 
     if (_lock) {
         mutex.unlock();
     }
-    return false;
+    return nullptr;
+}
+
+void Map::clean_entity_list() {
+    std::scoped_lock<std::mutex> lock(mutex);
+    for (Entity* e : entities) {
+        if (e == nullptr) {
+            continue;
+        }
+        if (e->get_type() < 0) {
+            // TODO: fix this mess
+            //delete e;
+            e = nullptr;
+        }
+    }
+    entities.erase(std::remove(begin(entities), end(entities), nullptr),
+             end(entities));
+}
+
+void Map::register_entity(Entity* e, bool _lock) {
+    if (_lock) {
+        mutex.lock();
+    }
+
+    entities.push_back(e);
+
+    if (_lock) {
+        mutex.unlock();
+    }
 }
 
 void Map::acquire() {
     mutex.lock();
 }
 
-std::vector<Entity>* Map::_get_m_entities() {
+std::vector<Entity*>* Map::_get_m_entities() {
     return &entities;
 }
 

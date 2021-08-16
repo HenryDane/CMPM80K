@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdint.h>
 #include "map.h"
+#include "player.h"
 
 #define SCREEN_W 640
 #define SCREEN_H 480
@@ -25,11 +26,19 @@
 #define T_KEY_Z  45
 #define T_KEY_X  55
 #define T_KEY_C  56
+#define T_PLANKS 5
 
-struct player_t {
+/*struct player_t {
     int x, y, hearts, held_item_texture, off_item_texture;
     uint32_t planks_count;
     uint32_t coin_count;
+};*/
+
+struct ark_t {
+    int planks_count;
+    int cows;
+    int sheep;
+    int pigs;
 };
 
 extern sf::RenderTexture renderTexture;
@@ -41,7 +50,8 @@ extern int game_state;
 extern int turns_remaining;
 
 extern Map* current_map;
-extern player_t player;
+extern Player* player;
+extern ark_t ark;
 
 extern int current_menu_sel;
 

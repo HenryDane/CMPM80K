@@ -1,5 +1,8 @@
 #include <iostream>
+#include <thread>
+#include <mutex>
 #include <SFML/Graphics.hpp>
+#include <chrono>
 #include "main.h"
 #include "map.h"
 #include "draw.h"
@@ -23,18 +26,19 @@ uint32_t g_next_uuid = 0xA;
     10 -> normal
     11 -> victory
     12 -> defeat
+    13 -> opening
     50 -> pause
     51 -> confirm quit
     52 -> save notif
 */
 int game_state = 0;
-int turns_remaining = 9999;
 
 // map and play information
 Map* current_map;
+std::mutex map_mutex;
 Config* config;
 
-// TODO menu information
+// menu information
 int current_menu_sel = 0;
 
 // function prototypes
@@ -43,6 +47,17 @@ void process_key_play(sf::Keyboard::Key k);
 void process_key_special(sf::Keyboard::Key k);
 void process_key_pause(sf::Keyboard::Key k);
 void process_key_credits(sf::Keyboard::Key k);
+
+// timer and thread information
+bool is_timer_running = false;
+bool is_shutdown_ready = false;
+std::mutex timer_mutex;
+int turns_remaining = 500;
+std::thread timer_thread;
+void edit_timer_state(bool state) {
+    std::scoped_lock<std::mutex> lock(timer_mutex);
+    is_timer_running = state;
+}
 
 int main() {
     sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(SCREEN_W, SCREEN_H), "CMPM 80K Graphical");
@@ -54,8 +69,35 @@ int main() {
 
     init_draw();
 
+    // start up threads
+    std::thread timer_thread([]() {
+        while(true) {
+            bool should_tick = false;
+            {
+                std::scoped_lock<std::mutex> lock(timer_mutex);
+                if (is_shutdown_ready) {
+                    break;
+                }
+                if (is_timer_running) {
+                    should_tick = true;
+                    turns_remaining--;
+                }
+            }
+            if (should_tick) {
+                current_map->acquire();
+                std::vector<Entity>* entities = current_map->_get_m_entities();
+                for (Entity& e : (*entities)) {
+                    e.tick_self();
+                }
+                current_map->release();
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1250));
+        }
+    });
+
     // initalize everything
     config = new Config();
+    // TODO fix this (sign compare, hardcoded)
     player = {config->get_player_sx(), config->get_player_sy(), 5, T_EMPTY, T_EMPTY, 123, 3};
     //player = {20, 20, 5, T_EMPTY, T_EMPTY, 123, 3};
     // TODO make this load from startup file
@@ -83,7 +125,8 @@ int main() {
             } else if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Tab) {
                     std::cout << "X=" << player.x << " Y=" << player.y;
-                    std::cout << " TILE=" << (int) current_map->get_tile_at(player.x, player.y) << std::endl;
+                    std::cout << " TILE=" << (int) current_map->get_tile_at(player.x, player.y);
+                    std::cout << " STATE=" << game_state << std::endl;
                 }
 
                 switch(game_state) {
@@ -101,6 +144,7 @@ int main() {
                     break;
                 case 11:
                 case 12:
+                case 13:
                     process_key_special(event.key.code);
                     break;
                 case 50:
@@ -151,6 +195,9 @@ int main() {
         case 12:
             draw_defeat_screen();
             break;
+        case 13:
+            draw_opening_curscene();
+            break;
         }
 
         // prep the render texture
@@ -176,6 +223,14 @@ int main() {
 
         window.display();
     }
+
+    {
+        // stop timer thread
+        std::scoped_lock<std::mutex> lock(timer_mutex);
+        is_shutdown_ready = true;
+    }
+
+    timer_thread.join();
 
     return 0;
 }
@@ -203,6 +258,7 @@ void process_key_play(sf::Keyboard::Key k) {
         break;
     case sf::Keyboard::Escape:
         game_state = 50;
+        edit_timer_state(false);
         break;
     default:
         break;
@@ -216,13 +272,15 @@ void process_key_menu(sf::Keyboard::Key k) {
             // goto normal gameplay
             // TODO -- make sure this initalizes everything
             std::cout << "update state!" << std::endl;
-            game_state = 10;
+            edit_timer_state(false);
+            game_state = 13;
             return;
         } else if (current_menu_sel == 1) {
             // try to save
             // TODO play error noise
         } else if (current_menu_sel == 2) {
             // TODO show credits
+            edit_timer_state(false);
             game_state = 3;
         } else if (current_menu_sel == 3) {
             renderWindow->close();
@@ -246,12 +304,23 @@ void process_key_menu(sf::Keyboard::Key k) {
 }
 
 void process_key_special(sf::Keyboard::Key k) {
-
+    if (k == sf::Keyboard::X) {
+        if (game_state == 13) {
+            // since were in opening, we go to normal
+            edit_timer_state(true);
+            game_state = 10;
+            // lock timer mutex and enable it
+        } else {
+            edit_timer_state(false);
+            game_state = 2;
+        }
+    }
 }
 
 void process_key_pause(sf::Keyboard::Key k) {
     switch(k) {
     case sf::Keyboard::A:
+        edit_timer_state(true);
         game_state = 10;
         break;
     case sf::Keyboard::Z:
@@ -261,9 +330,11 @@ void process_key_pause(sf::Keyboard::Key k) {
     case sf::Keyboard::X:
         // quit to menu
         std::cout << "menu!" << std::endl;
+        edit_timer_state(false);
         game_state = 2;
         break;
     case sf::Keyboard::Escape:
+        edit_timer_state(true);
         game_state = 10;
         break;
     default:
@@ -273,6 +344,7 @@ void process_key_pause(sf::Keyboard::Key k) {
 
 void process_key_credits(sf::Keyboard::Key k) {
     if (k == sf::Keyboard::X) {
+        edit_timer_state(false);
         game_state = 2;
     }
 }

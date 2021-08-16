@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <mutex>
 
 /*
     ENTITY TYPE TABLE
@@ -17,42 +18,16 @@
     21 -> ark
     22 -> enemy
 */
-
-class Entity {
-private:
-    int x, y, type, texture, state;
-    uint32_t id;
-public:
-    Entity() {
-        x = -1; y = -1; type = 0; id = 0; state = 0;
-    }
-    Entity(int id, int x, int y, int type, int texture) {
-        this->x = x;
-        this->y = y;
-        this->type = type;
-        this->texture = texture;
-        this->id = id;
-    }
-    ~Entity() { };
-
-    int get_x() { return x; }
-    int get_y() { return y; }
-    int get_texture() { return texture; }
-    int get_type() { return type; }
-    int get_state() { return state; }
-    void set_x(int x) { this->x = x; }
-    void set_y(int y) { this->y = y; }
-    void set_texture(int texture) { this->texture = texture; }
-    void set_type(int type) { this->type = type; }
-    void set_state(int state) { this->state = state; }
-
-    uint32_t get_id() { return id; }
-};
+#include "entity.h"
 
 class Map {
 private:
+    friend class Entity; // awful hack to prevent having to lock certian things.....
     uint32_t width, height;
     uint8_t* data;
+    std::vector<Entity> entities;
+
+    std::mutex mutex;
 public:
     Map();
     Map(std::string path, std::string entity_path, uint32_t width, uint32_t height);
@@ -62,10 +37,13 @@ public:
     uint32_t get_height();
     uint8_t get_tile_at(uint32_t w, uint32_t h);
     void set_tile_at(uint32_t w, uint32_t h, uint8_t tile);
-    bool is_collideable(uint32_t w, uint32_t h);
+    bool is_collideable(uint32_t w, uint32_t h, bool _lock = true);
     int get_interaction(uint32_t w, uint32_t h);
+    bool check_entity_collision(int nx, int ny, Entity& entity, bool _lock = true);
 
-    std::vector<Entity> entities;
+    std::vector<Entity>* _get_m_entities();
+    void acquire();
+    void release();
 };
 
 #endif // _MAP_H

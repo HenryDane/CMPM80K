@@ -7,7 +7,7 @@
 class Config {
 private:
     uint32_t map_w, map_h;
-    uint32_t start_x, start_y;
+    int start_x, start_y;
     std::string map_id;
 
 public:

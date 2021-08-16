@@ -16,6 +16,8 @@ Map::Map() {
 }
 
 Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t height) {
+    std::scoped_lock<std::mutex> lock(mutex);
+
     // TODO make this actually calculate itself from startup
     this->width = width;
     this->height = height;
@@ -68,8 +70,8 @@ Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t hei
     }
 
     // process entity data
-    for (int y = 0; y < this->height; y++) {
-        for (int x = 0; x < this->width; x++) {
+    for (uint32_t y = 0; y < this->height; y++) {
+        for (uint32_t x = 0; x < this->width; x++) {
             int type = entity_data[y * this->width + x];
             if (type >= 41 && type <= 43) {
                 // animals
@@ -100,18 +102,22 @@ Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t hei
 }
 
 Map::~Map() {
+    std::scoped_lock<std::mutex> lock(mutex);
     delete[] this->data;
 }
 
 uint32_t Map::get_width() {
+    std::scoped_lock<std::mutex> lock(mutex);
     return width;
 }
 
 uint32_t Map::get_height() {
+    std::scoped_lock<std::mutex> lock(mutex);
     return height;
 }
 
 uint8_t Map::get_tile_at(uint32_t x, uint32_t y) {
+    std::scoped_lock<std::mutex> lock(mutex);
     if (y >= height || x >= width) {
         return 0;
     }
@@ -119,30 +125,81 @@ uint8_t Map::get_tile_at(uint32_t x, uint32_t y) {
 }
 
 void Map::set_tile_at(uint32_t x, uint32_t y, uint8_t tile) {
+    std::scoped_lock<std::mutex> lock(mutex);
     if (y >= height || x >= width) {
         return;
     }
     data[y * width + x] = tile;
 }
 
-bool Map::is_collideable(uint32_t x, uint32_t y) {
+bool Map::is_collideable(uint32_t x, uint32_t y, bool _lock) {
+    //std::scoped_lock<std::mutex> lock(mutex);
+    if (_lock) {
+        mutex.lock();
+    }
+
     if (y >= height || x >= width) {
+        if (_lock) {
+            mutex.unlock();
+        }
         return true;
     }
 
     uint8_t t = data[y * width + x];
     if (t % 11 < 5) {
+        if (_lock) {
+            mutex.unlock();
+        }
         return true;
     }
 
+    if (_lock) {
+        mutex.unlock();
+    }
     return false;
 }
 
 int Map::get_interaction(uint32_t x, uint32_t y) {
+    std::scoped_lock<std::mutex> lock(mutex);
     if (y >= height || x >= width) {
         return 0;
     }
 
     // TODO make this work correctly
     return 0;
+}
+
+// returns true if valid
+bool Map::check_entity_collision(int nx, int ny, Entity& entity, bool _lock) {
+    //std::scoped_lock<std::mutex> lock(mutex);
+    if (_lock) {
+        mutex.lock();
+    }
+
+    for (Entity e : entities) {
+        if (e.get_x() == nx && e.get_y() == ny) {
+            entity = e;
+            if (_lock) {
+                mutex.unlock();
+            }
+            return true;
+        }
+    }
+
+    if (_lock) {
+        mutex.unlock();
+    }
+    return false;
+}
+
+void Map::acquire() {
+    mutex.lock();
+}
+
+std::vector<Entity>* Map::_get_m_entities() {
+    return &entities;
+}
+
+void Map::release() {
+    mutex.unlock();
 }

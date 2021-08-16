@@ -28,9 +28,12 @@ void draw_current_map() {
 void draw_entities() {
     int dx = 20 - player.x;
     int dy = 15 - player.y;
-    for (Entity& e : current_map->entities) {
+    current_map->acquire();
+    std::vector<Entity>* entities = current_map->_get_m_entities();
+    for (Entity& e : (*entities)) {
         jumpwr_xyt(e.get_x() + dx, e.get_y() + dy, e.get_texture());
     }
+    current_map->release();
 }
 
 void draw_player() {
@@ -295,16 +298,86 @@ void draw_credits() {
 
 /*
 ===================================================================================================
-  DRAWING WIN/LOSS SCREENS
+  DRAWING CUTSCENE
 ===================================================================================================
 */
 
 void draw_victory_screen() {
+    sf::Text title;
+    title.setString("VICTORY CUTSCRENE PLACEHOLDER");
+    title.setCharacterSize(28);
+    title.setFillColor(sf::Color(255, 255, 255));
+    title.setFont(font);
+    sf::FloatRect fr = title.getLocalBounds();
+    title.setPosition((640 - fr.width) / 2, (480 - fr.height) / 2);
+    renderTexture.draw(title);
 
+    sf::Sprite key_label;
+    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setPosition(10, 480 - 32);
+    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    //key_label.setColor(sf::Color(128, 128, 128, 255));
+    renderTexture.draw(key_label);
+
+    sf::Text text;
+    text.setString("CONTINUE");
+    text.setCharacterSize(14);
+    text.setFillColor(sf::Color(255, 255, 255));
+    text.setFont(font);
+    text.setPosition(10 + 32, 480 - 32);
+    renderTexture.draw(text);
 }
 
 void draw_defeat_screen() {
+    sf::Text title;
+    title.setString("DEFEAT CUTSCRENE PLACEHOLDER");
+    title.setCharacterSize(28);
+    title.setFillColor(sf::Color(255, 255, 255));
+    title.setFont(font);
+    sf::FloatRect fr = title.getLocalBounds();
+    title.setPosition((640 - fr.width) / 2, (480 - fr.height) / 2);
+    renderTexture.draw(title);
 
+    sf::Sprite key_label;
+    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setPosition(10, 480 - 32);
+    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    //key_label.setColor(sf::Color(128, 128, 128, 255));
+    renderTexture.draw(key_label);
+
+    sf::Text text;
+    text.setString("CONTINUE");
+    text.setCharacterSize(14);
+    text.setFillColor(sf::Color(255, 255, 255));
+    text.setFont(font);
+    text.setPosition(10 + 32, 480 - 32);
+    renderTexture.draw(text);
+}
+
+void draw_opening_curscene() {
+    sf::Text title;
+    title.setString("OPENING CUTSCRENE PLACEHOLDER");
+    title.setCharacterSize(28);
+    title.setFillColor(sf::Color(255, 255, 255));
+    title.setFont(font);
+    sf::FloatRect fr = title.getLocalBounds();
+    title.setPosition((640 - fr.width) / 2, (480 - fr.height) / 2);
+    renderTexture.draw(title);
+
+    sf::Sprite key_label;
+    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setPosition(10, 480 - 32);
+    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    //key_label.setColor(sf::Color(128, 128, 128, 255));
+    renderTexture.draw(key_label);
+
+    sf::Text text;
+    text.setString("CONTINUE");
+    text.setCharacterSize(14);
+    text.setFillColor(sf::Color(255, 255, 255));
+    text.setFont(font);
+    text.setPosition(10 + 32, 480 - 32);
+    renderTexture.draw(text);
 }
 
 /*

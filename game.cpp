@@ -15,6 +15,7 @@ bool update_player(int dx, int dy) {
     int nx = player.x + dx;
     int ny = player.y + dy;
 
+    // TODO fix this (sign compare warning)
     if (nx < 0 || nx > current_map->get_width() ||
         ny < 0 || ny > current_map->get_height()) {
         handle_collide_wall(dx, dy);
@@ -26,14 +27,12 @@ bool update_player(int dx, int dy) {
         return false;
     }
 
-    bool is_collided = false;
-    std::vector<Entity> collided;
-    for (Entity& e : current_map->entities) {
-        if (e.get_x() == nx && e.get_y() == ny) {
-            if (handle_entity_collision(e)) {
-                is_collided = true;
-            }
-        }
+    bool is_collided;
+    Entity e;
+    if (!current_map->check_entity_collision(nx, ny, e)) {
+        // no collisions so all ok
+    } else {
+        is_collided = handle_entity_collision(e);
     }
 
     if (!is_collided) {

@@ -21,5 +21,6 @@ void draw_entities();
 void draw_current_map();
 void draw_hud();
 void draw_credits();
+void draw_opening_curscene();
 
 #endif // _DRAW_H

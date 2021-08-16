@@ -7,11 +7,15 @@
 
 /*
     ENTITY TYPE TABLE
-    0 -> invalid
-    1 -> chest
-    2 -> cow
-    3 -> pig
-    4 -> sheep
+     0 -> invalid
+     1 -> chest
+     2 -> coin
+    12 -> cow
+    13 -> pig
+    14 -> sheep
+    20 -> planks
+    21 -> ark
+    22 -> enemy
 */
 
 class Entity {

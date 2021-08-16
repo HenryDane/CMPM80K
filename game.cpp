@@ -2,11 +2,11 @@
 #include <iostream>
 
 void handle_collide_wall(int dx, int dy) {
-    std::cout << "collided with wall" << std::endl;
+    //std::cout << "collided with wall" << std::endl;
 }
 
 bool handle_entity_collision(Entity& e) {
-    std::cout << "collided with entity of type " << e.get_type() << std::endl;
+    //std::cout << "collided with entity of type " << e.get_type() << std::endl;
 
     return false;
 }
@@ -40,4 +40,6 @@ bool update_player(int dx, int dy) {
         player.x += dx;
         player.y += dy;
     }
+
+    return is_collided;
 }

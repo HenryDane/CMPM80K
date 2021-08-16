@@ -72,7 +72,24 @@ Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t hei
         for (int x = 0; x < this->width; x++) {
             int type = entity_data[y * this->width + x];
             if (type >= 41 && type <= 43) {
-                Entity e(g_next_uuid++, x, y, type - 39, type);
+                // animals
+                Entity e(g_next_uuid++, x, y, type - 29, type);
+                entities.push_back(e);
+            } else if (type == 62) {
+                // planks
+                Entity e(g_next_uuid++, x, y, 20, type);
+                entities.push_back(e);
+            } else if (type == 61) {
+                // chest
+                Entity e(g_next_uuid++, x, y, 1, type);
+                entities.push_back(e);
+            } else if (type == 60) {
+                // coin
+                Entity e(g_next_uuid++, x, y, 2, type);
+                entities.push_back(e);
+            } else if (type == 63) {
+                // coin
+                Entity e(g_next_uuid++, x, y, 22, type);
                 entities.push_back(e);
             }
         }
@@ -95,21 +112,21 @@ uint32_t Map::get_height() {
 }
 
 uint8_t Map::get_tile_at(uint32_t x, uint32_t y) {
-    if (y > height || x > width) {
+    if (y >= height || x >= width) {
         return 0;
     }
     return data[y * width + x];
 }
 
 void Map::set_tile_at(uint32_t x, uint32_t y, uint8_t tile) {
-    if (y > height || x > width) {
+    if (y >= height || x >= width) {
         return;
     }
     data[y * width + x] = tile;
 }
 
 bool Map::is_collideable(uint32_t x, uint32_t y) {
-    if (y > height || x > width) {
+    if (y >= height || x >= width) {
         return true;
     }
 
@@ -122,7 +139,7 @@ bool Map::is_collideable(uint32_t x, uint32_t y) {
 }
 
 int Map::get_interaction(uint32_t x, uint32_t y) {
-    if (y > height || x > width) {
+    if (y >= height || x >= width) {
         return 0;
     }
 

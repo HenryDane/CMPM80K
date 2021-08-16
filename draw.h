@@ -19,5 +19,7 @@ void draw_main_menu();
 void draw_player();
 void draw_entities();
 void draw_current_map();
+void draw_hud();
+void draw_credits();
 
 #endif // _DRAW_H

@@ -8,105 +8,49 @@
 #include "draw.h"
 #include "config.h"
 #include "game.h"
+#include "gamemanager.h"
 
-// global render texture for reasons idk im tired
+// global variables
 sf::RenderTexture renderTexture;
 sf::RenderWindow* renderWindow;
 
-// entity information
-Player* player;
 uint32_t g_next_uuid = 0xA;
-
-// global state information
-/*
-    GAME STATE
-    0 -> uninitalized
-    2 -> main menu
-    3 -> credits
-    10 -> normal
-    11 -> victory
-    12 -> defeat
-    13 -> opening
-    50 -> pause
-    51 -> confirm quit
-    52 -> save notif
-*/
-int game_state = 0;
-
-// map and play information
-Map* current_map;
-std::mutex map_mutex;
-Config* config;
-ark_t ark;
-
-// menu information
 int current_menu_sel = 0;
 
-// function prototypes
-void process_key_menu(sf::Keyboard::Key k);
-void process_key_play(sf::Keyboard::Key k);
-void process_key_special(sf::Keyboard::Key k);
-void process_key_pause(sf::Keyboard::Key k);
-void process_key_credits(sf::Keyboard::Key k);
+Player* player; // TODO make this thread safe
+Map* current_map;
+Config* config;
+ark_t ark; // TODO make this a class
+GameManager* game;
 
-// timer and thread information
-bool is_timer_running = false;
-bool is_shutdown_ready = false;
-std::mutex timer_mutex;
-int turns_remaining = 500;
-std::thread timer_thread;
-void edit_timer_state(bool state) {
-    std::scoped_lock<std::mutex> lock(timer_mutex);
-    is_timer_running = state;
-}
+// function prototypes
+void poll_input_direct();
+bool process_key_menu();
+bool process_key_play();
+bool process_key_special();
+bool process_key_pause();
+bool process_key_credits();
+sf::Clock input_timer;
 
 int main() {
     sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(SCREEN_W, SCREEN_H), "CMPM 80K Graphical", sf::Style::Close);
+    window.setKeyRepeatEnabled(false);
+    window.setFramerateLimit(60);
     renderWindow = &window;
     if (!renderTexture.create(SCREEN_W, SCREEN_H)) {
         std::cout << "could not create render texture!" << std::endl;
         return 1020;
     }
 
-    init_draw();
-
-    // start up threads
-    std::thread timer_thread([]() {
-        while(true) {
-            bool should_tick = false;
-            {
-                std::scoped_lock<std::mutex> lock(timer_mutex);
-                if (is_shutdown_ready) {
-                    break;
-                }
-                if (is_timer_running) {
-                    should_tick = true;
-                    turns_remaining--;
-                }
-            }
-            if (should_tick) {
-                current_map->acquire();
-                std::vector<Entity*>* entities = current_map->_get_m_entities();
-                for (Entity* e : (*entities)) {
-                    e->tick_self();
-                }
-                current_map->release();
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1250));
-            current_map->clean_entity_list();
-        }
-    });
-
     // initalize everything
-    // TODO make this useful
-    config = new Config();
-    // TODO fix this (sign compare, hardcoded)
-    player = new Player(20, 20, 5);
+    init_draw();
+    input_timer.restart();
+    game = new GameManager();
+    config = new Config(); // TODO make this useful
+    player = new Player(20, 20, 5); // TODO fix this (sign compare, hardcoded)
     ark = {0, 0, 0, 0, -1, -1, false};
-    // TODO make this load from startup file
-    current_map = new Map("asset/test_map_Ground.csv", "asset/test_map_Entities.csv", config->get_map_w(), config->get_map_h());
-
-    game_state = 2;
+    current_map = new Map(config->get_map_id_ground(), config->get_map_id_entity(), config->get_map_w(), config->get_map_h());
+    game->alter_game_state(GameManager::MAIN_MENU);
 
     while (window.isOpen()) {
         window.clear();
@@ -128,77 +72,41 @@ int main() {
                 if (event.key.code == sf::Keyboard::Tab) {
                     std::cout << "X=" << player->get_x() << " Y=" << player->get_y();
                     std::cout << " TILE=" << (int) current_map->get_tile_at(player->get_x(), player->get_y());
-                    std::cout << " STATE=" << game_state << std::endl;
-                }
-
-                switch(game_state) {
-                case 1:
-                    // do nothing
-                    break;
-                case 2:
-                    process_key_menu(event.key.code);
-                    break;
-                case 3:
-                    process_key_credits(event.key.code);
-                    break;
-                case 10:
-                    process_key_play(event.key.code);
-                    break;
-                case 11:
-                case 12:
-                case 13:
-                    process_key_special(event.key.code);
-                    break;
-                case 50:
-                    process_key_pause(event.key.code);
-                    break;
-                case 51:
-                    // TODO process confirm quit
-                    break;
-                case 52:
-                    // TODO process save notif
-                    break;
-                default:
-                    if (event.key.code == sf::Keyboard::Tilde) {
-                        window.close();
-                    }
-                    break;
+                    std::cout << " STATE=" << game->get_game_state() << std::endl;
                 }
             }
         }
 
-        if (game_state == 10) {
-            // TODO check collisions
-            // TODO update entities
-            // TODO update interactions
-        }
+        poll_input_direct();
 
         window.clear();
-        switch(game_state) {
-        case 1:
+        switch(game->get_game_state()) {
+        case GameManager::STARTING:
             draw_loading_screen();
             break;
-        case 2:
+        case GameManager::MAIN_MENU:
             draw_main_menu();
             break;
-        case 3:
+        case GameManager::CREDITS:
             draw_credits();
             break;
-        case 50:
+        case GameManager::PAUSED:
             //draw_pause_menu();
-        case 10:
+        case GameManager::NORMAL_PLAY:
             draw_current_map();
             draw_entities();
             draw_player();
             break;
-        case 11:
+        case GameManager::WIN_CUTSCENE:
             draw_victory_screen();
             break;
-        case 12:
+        case GameManager::LOOSE_CUTSCENE:
             draw_defeat_screen();
             break;
-        case 13:
+        case GameManager::OPEN_CUTSCENE:
             draw_opening_curscene();
+            break;
+        default:
             break;
         }
 
@@ -210,150 +118,205 @@ int main() {
 
         // draw it to the window
         sf::Sprite sprite(texture);
-        if (game_state == 10 || game_state == 50) {
+        if (game->get_game_state() == GameManager::NORMAL_PLAY ||
+            game->get_game_state() == GameManager::PAUSED) {
             sprite.scale(2, 2);
             sprite.setPosition(-16 * 20, -16 * 15);
         }
         window.draw(sprite);
 
-        if (game_state == 10 || game_state == 50) {
+        if (game->get_game_state() == GameManager::NORMAL_PLAY ||
+            game->get_game_state() == GameManager::PAUSED) {
             draw_hud();
         }
-        if (game_state == 50) {
+        if (game->get_game_state() == GameManager::PAUSED) {
             draw_pause_menu();
         }
 
         window.display();
     }
 
-    {
-        // stop timer thread
-        std::scoped_lock<std::mutex> lock(timer_mutex);
-        is_shutdown_ready = true;
-    }
-
-    std::cout << "awaiting timer thread..." << std::endl;
-    timer_thread.join();
-    std::cout << "goodbye." << std::endl;
+    game->await_shutdown();
 
     return 0;
 }
 
-void process_key_play(sf::Keyboard::Key k) {
-    switch(k) {
-        // TODO validate move!
-    case sf::Keyboard::W:
+
+void poll_input_direct() {
+    if (!renderWindow->hasFocus()) {
+        return;
+    }
+
+    bool state = true;
+
+    sf::Time time = input_timer.getElapsedTime();
+    if (time.asMilliseconds() < 130) {
+        return;
+    }
+
+    switch(game->get_game_state()) {
+//    case 1:
+//        // do nothing
+//        break;
+    case GameManager::MAIN_MENU:
+        state = process_key_menu();
+        break;
+    case GameManager::CREDITS:
+        state = process_key_credits();
+        break;
+    case GameManager::NORMAL_PLAY:
+        state = process_key_play();
+        break;
+    case GameManager::OPEN_CUTSCENE:
+    case GameManager::WIN_CUTSCENE:
+    case GameManager::LOOSE_CUTSCENE:
+        state = process_key_special();
+        break;
+    case GameManager::PAUSED:
+        state = process_key_pause();
+        break;
+    case GameManager::CONFIRM_QUIT:
+        // TODO process confirm quit
+        break;
+    case GameManager::CONFIRM_SAVE:
+        // TODO process save notif
+        break;
+    default:
+        break;
+    }
+
+    if (state) {
+        // no keys were pressed
+        input_timer.restart();
+    }
+}
+
+bool process_key_play() {
+    bool pressed = false;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         update_player(0, -1);
-        break;
-    case sf::Keyboard::A:
+        pressed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         update_player(-1, 0);
-        break;
-    case sf::Keyboard::S:
+        pressed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
         update_player(0, 1);
-        break;
-    case sf::Keyboard::D:
+        pressed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
         update_player(1, 0);
-        break;
-    case sf::Keyboard::Z:
-        // TODO use held item
+        pressed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
         if (player->get_held_item_texture() != T_EMPTY) {
             do_drop_item();
         } else {
             do_pickup_item();
         }
-        break;
-    case sf::Keyboard::X:
-        // TODO use off item
-        break;
-    case sf::Keyboard::Escape:
-        game_state = 50;
-        edit_timer_state(false);
-        break;
-    default:
-        break;
+        pressed = true;
     }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+        // TODO use off item
+        pressed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+//        game_state = 50;
+//        edit_timer_state(false);
+        game->alter_game_state(GameManager::PAUSED);
+        pressed = true;
+    }
+    return pressed;
 }
 
-void process_key_menu(sf::Keyboard::Key k) {
-    switch(k) {
-    case sf::Keyboard::A:
+bool process_key_menu() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         if (current_menu_sel == 0) {
             // goto normal gameplay
             // TODO -- make sure this initalizes everything
             std::cout << "update state!" << std::endl;
-            edit_timer_state(false);
-            game_state = 13;
-            return;
+//            edit_timer_state(false);
+//            game_state = 13;
+            game->alter_game_state(GameManager::OPEN_CUTSCENE);
+            return false;
         } else if (current_menu_sel == 1) {
             // try to save
             // TODO play error noise
         } else if (current_menu_sel == 2) {
             // TODO show credits
-            edit_timer_state(false);
-            game_state = 3;
+//            edit_timer_state(false);
+//            game_state = 3;
+            game->alter_game_state(GameManager::CREDITS);
         } else if (current_menu_sel == 3) {
             renderWindow->close();
         }
-        break;
-    case sf::Keyboard::Z:
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
         // down
         current_menu_sel++;
         current_menu_sel = current_menu_sel % 4;
-        break;
-    case sf::Keyboard::X:
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         // up
         current_menu_sel--;
         if (current_menu_sel < 0) {
             current_menu_sel = 3;
         }
-        break;
-    default:
-        break;
+    } else {
+        return false;
     }
+    return true;
 }
 
-void process_key_special(sf::Keyboard::Key k) {
-    if (k == sf::Keyboard::X) {
-        if (game_state == 13) {
+bool process_key_special() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+        if (game->get_game_state() == GameManager::OPEN_CUTSCENE) {
             // since were in opening, we go to normal
-            edit_timer_state(true);
-            game_state = 10;
+//            edit_timer_state(true);
+//            game_state = 10;
+            game->alter_game_state(GameManager::NORMAL_PLAY);
             // lock timer mutex and enable it
         } else {
-            edit_timer_state(false);
-            game_state = 2;
+//            edit_timer_state(false);
+//            game_state = 2;
+            game->alter_game_state(GameManager::MAIN_MENU);
         }
+    } else {
+        return false;
     }
+    return true;
 }
 
-void process_key_pause(sf::Keyboard::Key k) {
-    switch(k) {
-    case sf::Keyboard::A:
-        edit_timer_state(true);
-        game_state = 10;
-        break;
-    case sf::Keyboard::Z:
-        // save
+bool process_key_pause() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+//        edit_timer_state(true);
+//        game_state = 10;
+        game->alter_game_state(GameManager::NORMAL_PLAY);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+        // TODO save
         std::cout << "saved" << std::endl;
-        break;
-    case sf::Keyboard::X:
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         // quit to menu
-        std::cout << "menu!" << std::endl;
-        edit_timer_state(false);
-        game_state = 2;
-        break;
-    case sf::Keyboard::Escape:
-        edit_timer_state(true);
-        game_state = 10;
-        break;
-    default:
-        break;
+//        edit_timer_state(false);
+//        game_state = 2;
+        game->alter_game_state(GameManager::MAIN_MENU);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+//        edit_timer_state(true);
+//        game_state = 10;
+        game->alter_game_state(GameManager::NORMAL_PLAY);
+    } else {
+        return false;
     }
+    return true;
 }
 
-void process_key_credits(sf::Keyboard::Key k) {
-    if (k == sf::Keyboard::X) {
-        edit_timer_state(false);
-        game_state = 2;
+bool process_key_credits() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+        // quit to menu
+//        edit_timer_state(false);
+//        game_state = 2;
+        game->alter_game_state(GameManager::MAIN_MENU);
+    } else {
+        return false;
     }
+    return true;
 }

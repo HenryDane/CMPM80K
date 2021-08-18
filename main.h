@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include "map.h"
 #include "player.h"
+#include "gamemanager.h"
 
 #define SCREEN_W 640
 #define SCREEN_H 480
@@ -43,12 +44,10 @@ extern sf::RenderWindow* renderWindow;
 
 extern uint32_t g_next_uuid;
 
-extern int game_state;
-extern int turns_remaining;
-
 extern Map* current_map;
 extern Player* player;
 extern ark_t ark;
+extern GameManager* game;
 
 extern int current_menu_sel;
 

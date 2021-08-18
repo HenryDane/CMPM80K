@@ -53,18 +53,32 @@ void do_pickup_item() {
     Entity* entity_n = current_map->check_entity_collision(px, py - 1);
     Entity* entity_s = current_map->check_entity_collision(px, py + 1);
 
-    if (entity_n != nullptr) {
-        player->set_held_item_texture(entity_n->get_texture());
-        entity_n->set_type(-1);
-    } else if (entity_s != nullptr) {
-        player->set_held_item_texture(entity_s->get_texture());
-        entity_s->set_type(-1);
-    } else if (entity_e != nullptr) {
-        player->set_held_item_texture(entity_e->get_texture());
-        entity_e->set_type(-1);
-    } else if (entity_w != nullptr) {
-        player->set_held_item_texture(entity_w->get_texture());
-        entity_w->set_type(-1);
+    bool has_found_entity = false;
+
+    if (entity_n != nullptr && !has_found_entity) {
+        if (entity_n->get_type() >= 12 && entity_n->get_type() <= 14) {
+            player->set_held_item_texture(entity_n->get_texture());
+            entity_n->set_type(-1);
+            has_found_entity = true;
+        }
+    }
+    if (entity_s != nullptr && !has_found_entity) {
+        if (entity_s->get_type() >= 12 && entity_s->get_type() <= 14) {
+            player->set_held_item_texture(entity_s->get_texture());
+            entity_s->set_type(-1);
+        }
+    }
+    if (entity_e != nullptr && !has_found_entity) {
+        if (entity_e->get_type() >= 12 && entity_e->get_type() <= 14) {
+            player->set_held_item_texture(entity_e->get_texture());
+            entity_e->set_type(-1);
+        }
+    }
+    if (entity_w != nullptr && !has_found_entity) {
+        if (entity_w->get_type() >= 12 && entity_w->get_type() <= 14) {
+            player->set_held_item_texture(entity_w->get_texture());
+            entity_w->set_type(-1);
+        }
     } else {
         std::cout << "no nearby entities" << std::endl;
         return;

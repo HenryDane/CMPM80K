@@ -100,10 +100,11 @@ void draw_hud() {
     renderWindow->draw(plank_count);
 
     sf::Text timer_text;
-    if (turns_remaining > 999) {
+    int _tr = game->get_turns_remaining();
+    if (_tr > 999) {
         timer_text.setString("TIMER >999");
     } else {
-        sprintf(tmp, "TIMER x%.3d", turns_remaining);
+        sprintf(tmp, "TIMER x%.3d", _tr);
         timer_text.setString(tmp);
     }
     timer_text.setCharacterSize(14);
@@ -126,7 +127,7 @@ void draw_hud() {
     key_label.setTexture(textures.at(T_KEY_Z));
     key_label.setPosition(40 + xoff, 8);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    if (game_state != 10) key_label.setColor(sf::Color(128, 128, 128, 255));
+    if (game->get_game_state() != GameManager::NORMAL_PLAY) key_label.setColor(sf::Color(128, 128, 128, 255));
     renderWindow->draw(key_label);
 
     //sf::Sprite key_label;

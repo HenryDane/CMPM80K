@@ -98,14 +98,12 @@ int main() {
     });
 
     // initalize everything
+    // TODO make this useful
     config = new Config();
     // TODO fix this (sign compare, hardcoded)
-    //player = {config->get_player_sx(), config->get_player_sy(), 5, T_EMPTY, T_EMPTY, 123, 3};
-    //player = {20, 20, 5, T_EMPTY, T_EMPTY, 123, 3};
     player = new Player(20, 20, 5);
-    ark = {0, 0, 0, 0};
+    ark = {0, 0, 0, 0, -1, -1, false};
     // TODO make this load from startup file
-    //current_map = new Map(config->get_map_id(), "__none__", config->get_map_w(), config->get_map_h());
     current_map = new Map("asset/test_map_Ground.csv", "asset/test_map_Entities.csv", config->get_map_w(), config->get_map_h());
 
     game_state = 2;

@@ -1,6 +1,7 @@
 #include "entity.h"
 #include "main.h"
 #include <iostream>
+#include <cmath>
 
 void Entity::tick_self() {
     int dx, dy;
@@ -35,6 +36,21 @@ void Entity::tick_self() {
     if (entity != nullptr) {
         // something got hit by this
         // TODO check if it was the ark and if so, game end
+        if (entity->get_type() == 21) {
+            std::cout << "enemy hit ark" << std::endl;
+            if (ark.cows > 0) {
+                ark.cows--;
+            } else if (ark.pigs > 0) {
+                ark.pigs--;
+            } else if (ark.sheep > 0) {
+                ark.sheep--;
+            } else if (ark.planks_count > 0) {
+                ark.planks_count--;
+            } else {
+                std::cout << "ark is destroyed!!!" << std::endl;
+                std::cout << "END THE GAME SOMEHOW??" << std::endl;
+            }
+        }
         return;
     }
 
@@ -74,8 +90,17 @@ bool update_aggressive_ai(Entity* e, int& dx, int& dy) {
     // calculate direction and clamp it
     // TODO prevent moving diagonally
     // TODO make it move to ark also (if ark closer)
-    dx = player->get_x() - e->get_x();
-    dy = player->get_y() - e->get_y();
+    int dist_ark = sqrt((e->get_x() - ark.x) * (e->get_x() - ark.x) +
+                        (e->get_y() - ark.y) * (e->get_y() - ark.y));
+    int dist_pla = sqrt((player->get_x() - ark.x) * (player->get_x() - ark.x) +
+                        (player->get_y() - ark.y) * (player->get_y() - ark.y));
+    if (dist_ark < dist_pla) {
+        dx = ark.x - e->get_x();
+        dy = ark.y - e->get_y();
+    } else {
+        dx = player->get_x() - e->get_x();
+        dy = player->get_y() - e->get_y();
+    }
     if (dx > 1) dx = 1;
     if (dx < -1) dx = -1;
     if (dy > 1) dy = 1;

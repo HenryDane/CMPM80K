@@ -28,17 +28,14 @@
 #define T_KEY_C  56
 #define T_PLANKS 5
 
-/*struct player_t {
-    int x, y, hearts, held_item_texture, off_item_texture;
-    uint32_t planks_count;
-    uint32_t coin_count;
-};*/
-
 struct ark_t {
     int planks_count;
     int cows;
     int sheep;
     int pigs;
+
+    int x, y;
+    bool on_map;
 };
 
 extern sf::RenderTexture renderTexture;

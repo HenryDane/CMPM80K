@@ -94,8 +94,15 @@ Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t hei
                 Entity* e = new Entity(g_next_uuid++, x, y, 22, type);
                 entities.push_back(e);
             } else if (type == 64) {
+                if (ark.on_map) {
+                    // there can only BE ONE!!!
+                    continue;
+                }
                 // ark
                 Entity* e = new Entity(g_next_uuid++, x, y, 21, type);
+                ark.x = x;
+                ark.y = y;
+                ark.on_map = true;
                 entities.push_back(e);
             }
         }

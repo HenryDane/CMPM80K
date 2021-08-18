@@ -6,7 +6,6 @@
 #include "main.h"
 #include "map.h"
 #include "draw.h"
-#include "config.h"
 #include "game.h"
 #include "gamemanager.h"
 
@@ -17,9 +16,8 @@ sf::RenderWindow* renderWindow;
 uint32_t g_next_uuid = 0xA;
 int current_menu_sel = 0;
 
-Player* player; // TODO make this thread safe
+Player* player;
 Map* current_map;
-Config* config;
 ark_t ark; // TODO make this a class
 GameManager* game;
 
@@ -45,11 +43,9 @@ int main() {
     // initalize everything
     init_draw();
     input_timer.restart();
-    game = new GameManager();
-    config = new Config(); // TODO make this useful
     player = new Player(20, 20, 5); // TODO fix this (sign compare, hardcoded)
+    game = new GameManager(); // this *should* alter the value of current_map
     ark = {0, 0, 0, 0, -1, -1, false};
-    current_map = new Map(config->get_map_id_ground(), config->get_map_id_entity(), config->get_map_w(), config->get_map_h());
     game->alter_game_state(GameManager::MAIN_MENU);
 
     while (window.isOpen()) {
@@ -222,8 +218,6 @@ bool process_key_play() {
         pressed = true;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-//        game_state = 50;
-//        edit_timer_state(false);
         game->alter_game_state(GameManager::PAUSED);
         pressed = true;
     }
@@ -236,8 +230,6 @@ bool process_key_menu() {
             // goto normal gameplay
             // TODO -- make sure this initalizes everything
             std::cout << "update state!" << std::endl;
-//            edit_timer_state(false);
-//            game_state = 13;
             game->alter_game_state(GameManager::OPEN_CUTSCENE);
             return false;
         } else if (current_menu_sel == 1) {
@@ -245,8 +237,6 @@ bool process_key_menu() {
             // TODO play error noise
         } else if (current_menu_sel == 2) {
             // TODO show credits
-//            edit_timer_state(false);
-//            game_state = 3;
             game->alter_game_state(GameManager::CREDITS);
         } else if (current_menu_sel == 3) {
             renderWindow->close();
@@ -271,13 +261,9 @@ bool process_key_special() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         if (game->get_game_state() == GameManager::OPEN_CUTSCENE) {
             // since were in opening, we go to normal
-//            edit_timer_state(true);
-//            game_state = 10;
             game->alter_game_state(GameManager::NORMAL_PLAY);
             // lock timer mutex and enable it
         } else {
-//            edit_timer_state(false);
-//            game_state = 2;
             game->alter_game_state(GameManager::MAIN_MENU);
         }
     } else {
@@ -288,20 +274,14 @@ bool process_key_special() {
 
 bool process_key_pause() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-//        edit_timer_state(true);
-//        game_state = 10;
         game->alter_game_state(GameManager::NORMAL_PLAY);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
         // TODO save
         std::cout << "saved" << std::endl;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         // quit to menu
-//        edit_timer_state(false);
-//        game_state = 2;
         game->alter_game_state(GameManager::MAIN_MENU);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-//        edit_timer_state(true);
-//        game_state = 10;
         game->alter_game_state(GameManager::NORMAL_PLAY);
     } else {
         return false;
@@ -312,8 +292,6 @@ bool process_key_pause() {
 bool process_key_credits() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         // quit to menu
-//        edit_timer_state(false);
-//        game_state = 2;
         game->alter_game_state(GameManager::MAIN_MENU);
     } else {
         return false;

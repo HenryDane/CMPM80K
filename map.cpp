@@ -1,5 +1,6 @@
 #include "map.h"
 #include "main.h"
+#include "util.h"
 #include <fstream>
 #include <vector>
 #include <iostream>
@@ -13,6 +14,135 @@ Map::Map() {
     for (size_t i = 0; i < width * height; i++) {
         data[i] = 0;
     }
+}
+
+Map::Map(std::string path) {
+    // first, lock this
+    std::scoped_lock<std::mutex> lock(mutex);
+
+    // open .map file
+    std::ifstream mapfile(path);
+    if (!mapfile.is_open()) {
+        std::cout << "ERROR: unable to open map file: " << path << std::endl;
+        exit(1031);
+    }
+
+    // setup values
+    width = 0;
+    height = 0;
+    data = nullptr;
+    startx = -1;
+    starty = -1;
+    entities.clear();
+
+    // temporary entity data
+    uint8_t* entity_data;
+
+    // fetch a line
+    for(std::string line; getline( mapfile, line ); ) {
+        // tokenize line
+        std::vector<std::string> tokens = split_by_char(line, ';');
+
+        if (tokens.size() != 2) {
+            std::cout << "MALFORMED TOKEN IN FILE: " << path << std::endl;
+            exit(1032);
+        }
+
+        if (tokens[0] == "NAME") {
+            this->name = tokens[1];
+        } else if (tokens[0] == "MAPDIM") {
+            std::vector<std::string> dimtokens = split_by_char(tokens[1], ',');
+            if (dimtokens.size() == 2) {
+                this->width = std::stoi(dimtokens[0]);
+                this->height = std::stoi(dimtokens[1]);
+                this->data = new uint8_t[width * height];
+                entity_data = new uint8_t[width * height];
+            } else {
+                std::cout << "MALFORMED MAPDIM TOKEN IN FILE: " << path << std::endl;
+                exit(1033);
+            }
+        } else if (tokens[0] == "TILES") {
+            std::vector<std::string> values = split_by_char(tokens[1], ',');
+            if (values.size() != width * height) {
+                std::cout << "TILES ENTRY HAS INCORRECT LENGTH: " << path << std::endl;
+                exit(1034);
+            } else {
+                for (size_t i = 0; i < values.size(); i++) {
+                    uint8_t d = (uint8_t) std::stoi(values[i]);
+                    data[i] = d - 1;
+                }
+            }
+        } else if (tokens[0] == "ENTITIES") {
+            std::vector<std::string> values = split_by_char(tokens[1], ',');
+            if (values.size() != width * height) {
+                std::cout << "ENTITIES ENTRY HAS INCORRECT LENGTH: " << path << std::endl;
+                exit(1034);
+            } else {
+                for (size_t i = 0; i < values.size(); i++) {
+                    uint8_t e = (uint8_t) std::stoi(values[i]);
+                    entity_data[i] = e - 1;
+                }
+            }
+        } else if (tokens[0] == "START") {
+            std::vector<std::string> dimtokens = split_by_char(tokens[1], ',');
+            if (dimtokens.size() == 2) {
+                this->startx = std::stoi(dimtokens[0]);
+                this->starty = std::stoi(dimtokens[1]);
+            } else {
+                std::cout << "MALFORMED START TOKEN IN FILE: " << path << std::endl;
+                exit(1033);
+            }
+        } else if (tokens[0] == "PORTAL") {
+            std::vector<std::string> dimtokens = split_by_char(tokens[1], ',');
+            if (dimtokens.size() == 3) {
+                this->portals.push_back(new Portal(std::stoi(dimtokens[0]), std::stoi(dimtokens[1]), dimtokens[2]));
+            } else {
+                std::cout << "MALFORMED START TOKEN IN FILE: " << path << std::endl;
+                exit(1033);
+            }
+        }
+    }
+
+    // process entity data
+    for (uint32_t y = 0; y < this->height; y++) {
+        for (uint32_t x = 0; x < this->width; x++) {
+            int type = entity_data[y * this->width + x];
+            if (type >= 41 && type <= 43) {
+                // animals
+                Entity* e = new Entity(g_next_uuid++, x, y, type - 29, type);
+                entities.push_back(e);
+            } else if (type == 62) {
+                // planks
+                Entity* e = new Entity(g_next_uuid++, x, y, 20, type);
+                entities.push_back(e);
+            } else if (type == 61) {
+                // chest
+                Entity* e = new Entity(g_next_uuid++, x, y, 1, type);
+                entities.push_back(e);
+            } else if (type == 60) {
+                // coin
+                Entity* e = new Entity(g_next_uuid++, x, y, 2, type);
+                entities.push_back(e);
+            } else if (type == 63) {
+                // coin
+                Entity* e = new Entity(g_next_uuid++, x, y, 22, type);
+                entities.push_back(e);
+            } else if (type == 64) {
+                if (ark.on_map) {
+                    // there can only BE ONE!!!
+                    continue;
+                }
+                // ark
+                Entity* e = new Entity(g_next_uuid++, x, y, 21, type);
+                ark.x = x;
+                ark.y = y;
+                ark.on_map = true;
+                entities.push_back(e);
+            }
+        }
+    }
+
+    delete[] entity_data;
 }
 
 Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t height) {
@@ -241,3 +371,16 @@ std::vector<Entity*>* Map::_get_m_entities() {
 void Map::release() {
     mutex.unlock();
 }
+
+int Map::get_start_x() {
+    return startx;
+}
+
+int Map::get_start_y() {
+    return starty;
+}
+
+std::string Map::get_name() {
+    return name;
+}
+

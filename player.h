@@ -2,11 +2,14 @@
 #define _PLAYER_H
 
 #include <stdint.h>
+#include <mutex>
 
 class Player {
 private:
     int x, y, hearts, held_item_texture, off_item_texture;
     uint32_t planks_count, coin_count;
+
+    std::mutex mutex;
 public:
     Player(int x, int y, int hearts);
     ~Player();

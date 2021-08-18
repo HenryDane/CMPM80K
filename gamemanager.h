@@ -3,6 +3,8 @@
 
 #include <mutex>
 #include <thread>
+#include <map>
+#include "map.h"
 
 class GameManager {
 public:
@@ -14,19 +16,7 @@ public:
         //SAVE=51, LOAD=52,
         CONFIRM_SAVE = 51, CONFIRM_QUIT = 52
     };
-private:
-    // timer and thread information
-    bool is_timer_running = false;
-    bool is_shutdown_ready = false;
-    std::mutex timer_mutex;
-    int turns_remaining = 500;
-    std::thread timer_thread;
 
-    // state information
-    GameState game_state = GameState::UNINITIALIZED;
-
-    void edit_timer_state(bool state);
-public:
     GameManager();
     ~GameManager();
 
@@ -35,6 +25,22 @@ public:
     void await_shutdown();
     int get_turns_remaining();
     GameState get_game_state();
+private:
+    // timer and thread information
+    bool is_timer_running = false;
+    bool is_shutdown_ready = false;
+    std::mutex timer_mutex;
+    int turns_remaining = 500;
+    std::thread timer_thread;
+
+    // map data
+    std::string start_map;
+    std::map<std::string, Map*> map_table;
+
+    // state information
+    GameState game_state = GameState::UNINITIALIZED;
+
+    void edit_timer_state(bool state);
 };
 
 #endif // _GAMEMANAGER_H

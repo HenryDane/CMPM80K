@@ -14,7 +14,7 @@ public:
         NORMAL_PLAY=10, PAUSED=50,
         OPEN_CUTSCENE=13, WIN_CUTSCENE=11, LOOSE_CUTSCENE=12,
         //SAVE=51, LOAD=52,
-        CONFIRM_SAVE = 51, CONFIRM_QUIT = 52
+        CONFIRM_SAVE = 51, CONFIRM_QUIT = 52, DIALOGUE=53,
     };
 
     GameManager();
@@ -25,6 +25,9 @@ public:
     void await_shutdown();
     int get_turns_remaining();
     GameState get_game_state();
+
+    void mark_portal(Portal* portal);
+    void update();
 private:
     // timer and thread information
     bool is_timer_running = false;
@@ -36,6 +39,10 @@ private:
     // map data
     std::string start_map;
     std::map<std::string, Map*> map_table;
+
+    // portal info
+    bool has_hit_portal = false;
+    Portal* active_portal = nullptr;
 
     // state information
     GameState game_state = GameState::UNINITIALIZED;

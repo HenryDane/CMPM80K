@@ -20,6 +20,8 @@ Player* player;
 Map* current_map;
 ark_t ark; // TODO make this a class
 GameManager* game;
+Dialogue* active_dialogue;
+int dialogue_state = -1; // <0 -> inactive, >=0 -> active
 
 // function prototypes
 void poll_input_direct();
@@ -28,6 +30,7 @@ bool process_key_play();
 bool process_key_special();
 bool process_key_pause();
 bool process_key_credits();
+bool process_key_dialogue();
 sf::Clock input_timer;
 
 int main() {
@@ -46,6 +49,7 @@ int main() {
     player = new Player(20, 20, 5); // TODO fix this (sign compare, hardcoded)
     game = new GameManager(); // this *should* alter the value of current_map
     ark = {0, 0, 0, 0, -1, -1, false};
+    active_dialogue = nullptr;
     game->alter_game_state(GameManager::MAIN_MENU);
 
     while (window.isOpen()) {
@@ -74,6 +78,7 @@ int main() {
         }
 
         poll_input_direct();
+        game->update();
 
         window.clear();
         switch(game->get_game_state()) {
@@ -87,7 +92,7 @@ int main() {
             draw_credits();
             break;
         case GameManager::PAUSED:
-            //draw_pause_menu();
+        case GameManager::DIALOGUE:
         case GameManager::NORMAL_PLAY:
             draw_current_map();
             draw_entities();
@@ -115,18 +120,23 @@ int main() {
         // draw it to the window
         sf::Sprite sprite(texture);
         if (game->get_game_state() == GameManager::NORMAL_PLAY ||
-            game->get_game_state() == GameManager::PAUSED) {
+            game->get_game_state() == GameManager::PAUSED ||
+            game->get_game_state() == GameManager::DIALOGUE) {
             sprite.scale(2, 2);
             sprite.setPosition(-16 * 20, -16 * 15);
         }
         window.draw(sprite);
 
         if (game->get_game_state() == GameManager::NORMAL_PLAY ||
-            game->get_game_state() == GameManager::PAUSED) {
+            game->get_game_state() == GameManager::PAUSED ||
+            game->get_game_state() == GameManager::DIALOGUE) {
             draw_hud();
         }
         if (game->get_game_state() == GameManager::PAUSED) {
             draw_pause_menu();
+        }
+        if (game->get_game_state() == GameManager::DIALOGUE) {
+            draw_dialogue();
         }
 
         window.display();
@@ -176,6 +186,9 @@ void poll_input_direct() {
         break;
     case GameManager::CONFIRM_SAVE:
         // TODO process save notif
+        break;
+    case GameManager::DIALOGUE:
+        process_key_dialogue();
         break;
     default:
         break;
@@ -296,5 +309,27 @@ bool process_key_credits() {
     } else {
         return false;
     }
+    return true;
+}
+
+bool process_key_dialogue() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+        dialogue_state++;
+        if (dialogue_state >= active_dialogue->text.size()) {
+            // done
+            active_dialogue = nullptr;
+            dialogue_state = -1;
+            game->alter_game_state(GameManager::NORMAL_PLAY);
+        } else {
+            // more to go
+        }
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+        active_dialogue = nullptr;
+        dialogue_state = -1;
+        game->alter_game_state(GameManager::NORMAL_PLAY);
+    } else {
+        return false;
+    }
+
     return true;
 }

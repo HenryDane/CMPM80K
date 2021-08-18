@@ -22,5 +22,8 @@ void draw_current_map();
 void draw_hud();
 void draw_credits();
 void draw_opening_curscene();
+void draw_dialogue();
+
+extern sf::Font font;
 
 #endif // _DRAW_H

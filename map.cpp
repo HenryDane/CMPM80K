@@ -1,6 +1,7 @@
 #include "map.h"
 #include "main.h"
 #include "util.h"
+#include "draw.h"
 #include <fstream>
 #include <vector>
 #include <iostream>
@@ -95,106 +96,31 @@ Map::Map(std::string path) {
         } else if (tokens[0] == "PORTAL") {
             std::vector<std::string> dimtokens = split_by_char(tokens[1], ',');
             if (dimtokens.size() == 3) {
-                this->portals.push_back(new Portal(std::stoi(dimtokens[0]), std::stoi(dimtokens[1]), dimtokens[2]));
+                this->portals.push_back(new Portal(std::stoi(dimtokens[0]) / 16,
+                                                   std::stoi(dimtokens[1]) / 16,
+                                                   dimtokens[2]));
             } else {
                 std::cout << "MALFORMED START TOKEN IN FILE: " << path << std::endl;
                 exit(1033);
             }
-        }
-    }
+        } else if (tokens[0] == "DIALOGUE") {
+            std::vector<std::string> dimtokens = split_by_char(tokens[1], ',');
+            if (dimtokens.size() >= 4) {
+                int x = std::stoi(dimtokens[0]) / 16;
+                int y = std::stoi(dimtokens[1]) / 16;
+                std::string name = dimtokens[2];
+                int n = std::stoi(dimtokens[3]);
 
-    // process entity data
-    for (uint32_t y = 0; y < this->height; y++) {
-        for (uint32_t x = 0; x < this->width; x++) {
-            int type = entity_data[y * this->width + x];
-            if (type >= 41 && type <= 43) {
-                // animals
-                Entity* e = new Entity(g_next_uuid++, x, y, type - 29, type);
-                entities.push_back(e);
-            } else if (type == 62) {
-                // planks
-                Entity* e = new Entity(g_next_uuid++, x, y, 20, type);
-                entities.push_back(e);
-            } else if (type == 61) {
-                // chest
-                Entity* e = new Entity(g_next_uuid++, x, y, 1, type);
-                entities.push_back(e);
-            } else if (type == 60) {
-                // coin
-                Entity* e = new Entity(g_next_uuid++, x, y, 2, type);
-                entities.push_back(e);
-            } else if (type == 63) {
-                // coin
-                Entity* e = new Entity(g_next_uuid++, x, y, 22, type);
-                entities.push_back(e);
-            } else if (type == 64) {
-                if (ark.on_map) {
-                    // there can only BE ONE!!!
-                    continue;
+                if (dimtokens.size() != 4 + n) {
+                    std::cout << "MALFORMED DIALOGUE COUNT IN FILE: " << path << std::endl;
+                    exit(1033);
                 }
-                // ark
-                Entity* e = new Entity(g_next_uuid++, x, y, 21, type);
-                ark.x = x;
-                ark.y = y;
-                ark.on_map = true;
-                entities.push_back(e);
-            }
-        }
-    }
 
-    delete[] entity_data;
-}
-
-Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t height) {
-    std::scoped_lock<std::mutex> lock(mutex);
-
-    // TODO make this actually calculate itself from startup
-    this->width = width;
-    this->height = height;
-    data = new uint8_t[width * height];
-
-    // open map file
-    std::ifstream mapfile(path);
-    if (!mapfile.is_open()) {
-        std::cout << "ERROR: unable to open map file: " << path << std::endl;
-        exit(1030);
-    }
-
-    // parse each line...
-    int itr = 0;
-    for(std::string line; getline( mapfile, line ); ) {
-        // create a string stream and feed it the current line
-        std::stringstream ss;
-        ss << line;
-
-        // fucking who fucking knows kill me
-        while(ss.good()) {
-            std::string sstr;
-            getline( ss, sstr, ',' );
-
-            data[itr++] = std::stoi(sstr);
-        }
-    }
-
-    // handle entity file
-    int* entity_data = new int[width * height];
-    std::ifstream entityfile(entity_path);
-    if (!entityfile.is_open()) {
-        std::cout << "ERROR: unable to open map file: " << path << std::endl;
-    } else {
-        // parse each line...
-        itr = 0;
-        for(std::string line; getline( entityfile, line ); ) {
-            // create a string stream and feed it the current line
-            std::stringstream ss;
-            ss << line;
-
-            // fucking who fucking knows kill me
-            while(ss.good()) {
-                std::string sstr;
-                getline( ss, sstr, ',' );
-
-                entity_data[itr++] = std::stoi(sstr);
+                Dialogue* d = new Dialogue(x, y, name);
+                for (int i = 4; i < 4 + n; i++) {
+                    d->add_text(dimtokens[i]);
+                }
+                this->dialogue.push_back(d);
             }
         }
     }
@@ -238,7 +164,6 @@ Map::Map(std::string path, std::string entity_path, uint32_t width, uint32_t hei
         }
     }
 
-    // free entity data
     delete[] entity_data;
 }
 
@@ -273,7 +198,7 @@ void Map::set_tile_at(uint32_t x, uint32_t y, uint8_t tile) {
     data[y * width + x] = tile;
 }
 
-bool Map::is_collideable(uint32_t x, uint32_t y, bool _lock) {
+bool Map::is_collideable(uint32_t x, uint32_t y, bool is_player, bool _lock) {
     //std::scoped_lock<std::mutex> lock(mutex);
     if (_lock) {
         mutex.lock();
@@ -292,6 +217,45 @@ bool Map::is_collideable(uint32_t x, uint32_t y, bool _lock) {
             mutex.unlock();
         }
         return true;
+    }
+
+    // check portals and dialogue last
+    for (Portal* p : portals) {
+        if (p->x == x && p->y == y) {
+            // hit a portal
+            if (is_player) {
+                game->mark_portal(p);
+                if (_lock) {
+                    mutex.unlock();
+                }
+                // its a player so it can stand here but were also gonna activate the portal
+                return false;
+            } else {
+                if (_lock) {
+                    mutex.unlock();
+                }
+                // its not a player so this is basically a wall
+                return true;
+            }
+        }
+    }
+    for (Dialogue* d : dialogue) {
+        if (d->x == x && d->y == y) {
+            if (is_player) {
+                active_dialogue = d;
+                dialogue_state = 0;
+                game->alter_game_state(GameManager::DIALOGUE);
+                if (_lock) {
+                    mutex.unlock();
+                }
+                return false;
+            } else {
+                if (_lock) {
+                    mutex.unlock();
+                }
+                return true;
+            }
+        }
     }
 
     if (_lock) {
@@ -384,3 +348,43 @@ std::string Map::get_name() {
     return name;
 }
 
+Dialogue::Dialogue(int x, int y, std::string name) {
+    this->x = x;
+    this->y = y;
+    this->name = name;
+}
+
+Dialogue::~Dialogue() {
+//    for(int i = 0; i < text.size(); i++) {
+//        delete text[i];
+//        text[i] = nullptr;
+//    }
+}
+
+void Dialogue::add_text(std::string str) {
+    // NOTE max width = 496
+    // split string so we can word wrap
+    std::vector<std::string> words = split_by_char(str, ' ');
+
+    // prepare text object
+    std::string current_text = "";
+    sf::Text t;
+    t.setCharacterSize(14);
+    t.setFont(font);
+
+    for (int i = 0; i < words.size(); i++) {
+        std::string new_text = current_text + " " + words[i];
+
+        t.setString(new_text);
+        sf::FloatRect fr = t.getLocalBounds();
+        if (fr.width <= 496) {
+            current_text = new_text;
+        } else {
+            new_text = current_text + "\n " + words[i];
+            current_text = new_text;
+        }
+    }
+
+    text.push_back(t);
+
+}

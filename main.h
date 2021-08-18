@@ -23,11 +23,13 @@
 #define T_COIN   60
 #define T_HEART  52
 #define T_EMPTY  35
-#define T_KEY_A  44
-#define T_KEY_Z  45
-#define T_KEY_X  55
+#define T_KEY_A  82
+#define T_KEY_Z  86
+#define T_KEY_X  87
 #define T_KEY_C  56
 #define T_PLANKS 5
+#define T_RIGHT  75
+#define T_DOWN   76
 
 struct ark_t {
     int planks_count;
@@ -48,6 +50,8 @@ extern Map* current_map;
 extern Player* player;
 extern ark_t ark;
 extern GameManager* game;
+extern Dialogue* active_dialogue;
+extern int dialogue_state;
 
 extern int current_menu_sel;
 

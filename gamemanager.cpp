@@ -115,3 +115,26 @@ int GameManager::get_turns_remaining() {
 GameManager::GameState GameManager::get_game_state() {
     return game_state;
 }
+
+void GameManager::mark_portal(Portal* portal) {
+    if (portal != nullptr) {
+        active_portal = portal;
+        has_hit_portal = true;
+    }
+}
+
+void GameManager::update() {
+    if (has_hit_portal) {
+        has_hit_portal = false;
+
+        if (map_table.find(active_portal->name) == map_table.end()) {
+            // we didnt find the portal
+            std::cout << "Erroneous portal trigger: " << active_portal->name << std::endl;
+            return;
+        }
+
+        current_map = map_table[active_portal->name];
+        player->set_x(current_map->get_start_x());
+        player->set_y(current_map->get_start_y());
+    }
+}

@@ -67,6 +67,12 @@ r.write('ENTITIES;'+str(j['layers'][entity_idx]['data']).replace(' ','')[1:-1]+'
 r.write('START;'+str(start_dat['startx'])+','+str(start_dat['starty'])+'\n')
 # write portal info
 for o in j['layers'][object_idx]['objects']:
-    r.write(o['type']+str(';')+str(o['x'])+','+str(o['y'])+','+o['name']+'\n')
+	if (o['type'] == 'PORTAL'):
+		r.write(o['type']+str(';')+str(o['x'])+','+str(o['y'])+','+o['name']+'\n')
+	elif (o['type'] == 'DIALOGUE'):
+		odict = {}
+		for p in o['properties']:
+			odict[p['name']] = p['value']
+		r.write(o['type']+str(';')+str(o['x'])+','+str(o['y'])+','+o['name']+','+odict['Count']+','+odict['Dialogue']+'\n')
 # close
 r.close()

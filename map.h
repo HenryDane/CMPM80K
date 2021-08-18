@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
-
+#include <SFML/Graphics/Text.hpp>
 /*
     ENTITY TYPE TABLE
      0 -> invalid
@@ -15,6 +15,7 @@
     12 -> cow
     13 -> pig
     14 -> sheep
+    15 -> chicken
     20 -> planks
     21 -> ark
     22 -> enemy
@@ -33,6 +34,18 @@ public:
     }
 };
 
+class Dialogue {
+public:
+    int x, y;
+    std::string name;
+    std::vector<sf::Text> text;
+
+    Dialogue(int x, int y, std::string name);
+    ~Dialogue();
+
+    void add_text(std::string str);
+};
+
 class Map {
 private:
     uint32_t width, height;
@@ -40,6 +53,7 @@ private:
     int startx, starty;
     std::vector<Entity*> entities;
     std::vector<Portal*> portals;
+    std::vector<Dialogue*> dialogue;
     std::string name;
 
     std::mutex mutex;
@@ -56,7 +70,7 @@ public:
     std::string get_name();
     uint8_t get_tile_at(uint32_t w, uint32_t h);
     void set_tile_at(uint32_t w, uint32_t h, uint8_t tile);
-    bool is_collideable(uint32_t w, uint32_t h, bool _lock = true);
+    bool is_collideable(uint32_t w, uint32_t h, bool is_player, bool _lock = true);
     int get_interaction(uint32_t w, uint32_t h);
     Entity* check_entity_collision(int nx, int ny, bool _lock = true);
 

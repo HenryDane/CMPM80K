@@ -24,13 +24,13 @@ void do_drop_item() {
     int dx = 0;
     int dy = 0;
 
-    if (!current_map->is_collideable(player->get_x() + 1, player->get_y())) {
+    if (!current_map->is_collideable(player->get_x() + 1, player->get_y(), true)) {
         dx = 1;
-    } else if (!current_map->is_collideable(player->get_x() - 1, player->get_y())) {
+    } else if (!current_map->is_collideable(player->get_x() - 1, player->get_y(), true)) {
         dx = -1;
-    } else if (!current_map->is_collideable(player->get_x(), player->get_y() + 1)) {
+    } else if (!current_map->is_collideable(player->get_x(), player->get_y() + 1, true)) {
         dy = 1;
-    } else if (!current_map->is_collideable(player->get_x(), player->get_y() - 1)) {
+    } else if (!current_map->is_collideable(player->get_x(), player->get_y() - 1, true)) {
         dy = -1;
     } else {
         std::cout << "unable to place entity" << std::endl;
@@ -86,15 +86,11 @@ void do_pickup_item() {
 }
 
 bool handle_entity_collision(Entity* e) {
-    std::cout << "collided with entity of type " << e << std::endl;
-
     if (e->get_type() == 2) {
-        std::cout << "hit coin" << std::endl;
         player->set_coin_count(player->get_coin_count() + 1);
         e->set_type(-1);
         return false;
     } else if (e->get_type() == 20) {
-        std::cout << "hit planks" << std::endl;
         player->set_planks_count(player->get_planks_count() + 1);
         e->set_type(-1);
         return false;
@@ -112,14 +108,12 @@ bool handle_entity_collision(Entity* e) {
             current_map->register_entity(h, false);
         }
     } else if (e->get_type() == 3) {
-        std::cout << "hit heart" << std::endl;
         player->set_hearts(player->get_hearts() + 1);
         e->set_type(-1);
         return false;
     } else if (e->get_type() == 22) {
         // TODO make combat more interesting?
         e->set_type(-1);
-        std::cout << "enemy vanquished" << std::endl;
         return true;
     } else if (e->get_type() == 21) {
         // collided with the ark
@@ -163,7 +157,7 @@ bool update_player(int dx, int dy) {
         return false;
     }
 
-    if (current_map->is_collideable(nx, ny)) {
+    if (current_map->is_collideable(nx, ny, true)) {
         handle_collide_wall(dx, dy);
         return false;
     }

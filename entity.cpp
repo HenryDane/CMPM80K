@@ -28,7 +28,7 @@ void Entity::tick_self() {
     int nx = x + dx;
     int ny = y + dy;
 
-    if (current_map->is_collideable(nx, ny, false)) {
+    if (current_map->is_collideable(nx, ny, false, false)) {
         return;
     }
 

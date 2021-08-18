@@ -434,6 +434,8 @@ void draw_pause_menu() {
     background.setPosition(213, 160);
     background.setSize(sf::Vector2f(213, 160));
     background.setFillColor(sf::Color(0, 0, 0, 255));
+    background.setOutlineColor(sf::Color(255, 255, 255, 255));
+    background.setOutlineThickness(3);
     renderWindow->draw(background);
 
     sf::Text label;
@@ -494,6 +496,72 @@ void draw_loading_screen() {
     for (unsigned int i = 0; i < textures.size(); i++) {
         jumpwr_xyt(i % 32, i / 32, i);
     }
+}
+
+/*
+===================================================================================================
+  DRAWING DIALOGUE
+===================================================================================================
+*/
+
+void draw_dialogue() {
+    if (active_dialogue == nullptr || dialogue_state < 0) {
+        return;
+    }
+
+    sf::Text name;
+    name.setString(active_dialogue->name);
+    name.setPosition(64, 480-9*16 - 8);
+    name.setCharacterSize(14);
+    name.setFillColor(sf::Color(255, 255, 255));
+    name.setFont(font);
+    sf::FloatRect fr = name.getLocalBounds();
+    sf::RectangleShape nameplate;
+    nameplate.setPosition(64, 480-9*16 - 8);
+    nameplate.setSize(sf::Vector2f(fr.width, fr.height + 8));
+    nameplate.setFillColor(sf::Color(0, 0, 0));
+    renderWindow->draw(nameplate);
+    renderWindow->draw(name);
+
+    sf::RectangleShape background;
+    background.setPosition(64, 480-8*16);
+    background.setSize(sf::Vector2f(640 - 128, 6*16));
+    background.setFillColor(sf::Color(0, 0, 0, 255));
+    background.setOutlineColor(sf::Color(255, 255, 255, 255));
+    background.setOutlineThickness(3);
+    renderWindow->draw(background);
+
+    sf::Sprite right_label;
+    right_label.setTexture(textures.at(T_RIGHT));
+    right_label.setPosition(556, 428);
+    right_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(right_label);
+
+    sf::Sprite key_next_label;
+    key_next_label.setTexture(textures.at(T_KEY_Z));
+    key_next_label.setPosition(536, 428);
+    key_next_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(key_next_label);
+
+    sf::Sprite down_label;
+    down_label.setTexture(textures.at(T_DOWN));
+    down_label.setPosition(488, 428);
+    down_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(down_label);
+
+    sf::Sprite key_skip_label;
+    key_skip_label.setTexture(textures.at(T_KEY_X));
+    key_skip_label.setPosition(468, 428);
+    key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(key_skip_label);
+
+    sf::Text t = active_dialogue->text[dialogue_state];
+    //std::cout << t.getString().toAnsiString() << std::endl;
+    t.setPosition(64+8,480-(8*16)+8);
+    t.setCharacterSize(14);
+    t.setFillColor(sf::Color(255, 255, 255, 255));
+    t.setFont(font);
+    renderWindow->draw(t);
 }
 
 /*

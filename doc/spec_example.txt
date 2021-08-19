@@ -1,6 +1,6 @@
 # startup.txt
 START_MAP;tutorial_0.map
-MAPS_LIST;test_map.map,tutorial_1.map,tutorial_0.map
+MAPS_LIST;test_map.map,tutorial_0.map
 
 # tutorial_0.map
 NAME;Tutorial Pt. 0

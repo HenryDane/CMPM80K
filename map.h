@@ -6,20 +6,6 @@
 #include <vector>
 #include <mutex>
 #include <SFML/Graphics/Text.hpp>
-/*
-    ENTITY TYPE TABLE
-     0 -> invalid
-     1 -> chest
-     2 -> coin
-     3 -> heart
-    12 -> cow
-    13 -> pig
-    14 -> sheep
-    15 -> chicken
-    20 -> planks
-    21 -> ark
-    22 -> enemy
-*/
 #include "entity.h"
 
 class Portal {

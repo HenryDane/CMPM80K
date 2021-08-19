@@ -46,7 +46,7 @@ int main() {
     // initalize everything
     init_draw();
     input_timer.restart();
-    player = new Player(20, 20, 5); // TODO fix this (sign compare, hardcoded)
+    player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
     game = new GameManager(); // this *should* alter the value of current_map
     ark = {0, 0, 0, 0, -1, -1, false};
     active_dialogue = nullptr;
@@ -226,10 +226,10 @@ bool process_key_play() {
         }
         pressed = true;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
-        // TODO use off item
-        pressed = true;
-    }
+//    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+//        // TODO use off item
+//        pressed = true;
+//    }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
         game->alter_game_state(GameManager::PAUSED);
         pressed = true;

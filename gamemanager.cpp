@@ -57,6 +57,7 @@ GameManager::~GameManager() {
 void GameManager::edit_timer_state(bool state) {
     std::scoped_lock<std::mutex> lock(timer_mutex);
     is_timer_running = state;
+    input_timer.restart();
 }
 
 void GameManager::alter_game_state(GameState new_state) {

@@ -19,7 +19,11 @@ void draw_current_map() {
     for (uint32_t y = 0; y < current_map->get_height(); y++) {
         for (uint32_t x = 0; x < current_map->get_width(); x++) {
             uint8_t t = current_map->get_tile_at(x, y);
-            if (t > textures.size()) continue;
+            if (t > textures.size()) {
+                continue;
+            } else if (t % 3 <= 2 && t <= 24) {
+                jumpwr_xyt(x + dx, y + dy, T_SAND);
+            }
             jumpwr_xyt(x + dx, y + dy, t);
         }
     }
@@ -33,6 +37,9 @@ void draw_entities() {
     for (Entity* e : (*entities)) {
         if (e->get_type() < 0) continue;
         jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, e->get_texture());
+        if (e->get_type() == 30 && e->get_state() == 0) {
+            jumpwr_xyt(e->get_x() + dx, e->get_y() + dy - 1, T_TREE_TOP);
+        }
     }
     current_map->release();
 }
@@ -131,10 +138,10 @@ void draw_hud() {
     renderWindow->draw(key_label);
 
     //sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_X));
-    key_label.setPosition(88 + xoff, 8);
-    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(key_label);
+//    key_label.setTexture(textures.at(T_KEY_X));
+//    key_label.setPosition(88 + xoff, 8);
+//    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+//    renderWindow->draw(key_label);
 }
 
 /*

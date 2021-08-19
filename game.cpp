@@ -1,21 +1,23 @@
 #include "game.h"
+#include "util.h"
 #include <iostream>
 
 void handle_collide_wall(int dx, int dy) {
     int nx = player->get_x() + dx;
     int ny = player->get_y() + dy;
 
-    if (current_map->get_tile_at(nx, ny) == T_EMPTY) {
-        if (player->get_planks_count() > 0) {
-            player->set_planks_count(player->get_planks_count() - 1);
+    int tile = current_map->get_tile_at(nx, ny);
+    if ((tile == T_EMPTY) ||
+        ((tile % 11 < 5) && (tile < 27))) {
+        if (player->get_held_item_texture() == T_PLANK) {
             current_map->set_tile_at(nx, ny, T_PLANKS);
+            player->set_held_item_texture(T_EMPTY);
         }
     }
 }
 
 void do_drop_item() {
-    if (player->get_held_item_texture() < 41 ||
-        player->get_held_item_texture() > 43) {
+    if (!is_entity_pickupable(get_entity_type_from_texture(player->get_held_item_texture()))) {
         std::cout << "reset player held item" << std::endl;
         player->set_held_item_texture(T_EMPTY);
         return;
@@ -38,7 +40,8 @@ void do_drop_item() {
     }
 
     Entity* e = new Entity(g_next_uuid++, player->get_x() + dx, player->get_y() + dy,
-                           player->get_held_item_texture() - 29, player->get_held_item_texture());
+                           get_entity_type_from_texture(player->get_held_item_texture()),
+                           player->get_held_item_texture());
     current_map->register_entity(e);
 
     player->set_held_item_texture(T_EMPTY);
@@ -53,36 +56,37 @@ void do_pickup_item() {
     Entity* entity_n = current_map->check_entity_collision(px, py - 1);
     Entity* entity_s = current_map->check_entity_collision(px, py + 1);
 
-    bool has_found_entity = false;
-
-    if (entity_n != nullptr && !has_found_entity) {
-        if (entity_n->get_type() >= 12 && entity_n->get_type() <= 14) {
+    if (entity_n != nullptr) {
+        if (is_entity_pickupable(entity_n->get_type())) {
             player->set_held_item_texture(entity_n->get_texture());
             entity_n->set_type(-1);
-            has_found_entity = true;
+            return;
         }
     }
-    if (entity_s != nullptr && !has_found_entity) {
-        if (entity_s->get_type() >= 12 && entity_s->get_type() <= 14) {
+    if (entity_s != nullptr) {
+        if (is_entity_pickupable(entity_s->get_type())) {
             player->set_held_item_texture(entity_s->get_texture());
             entity_s->set_type(-1);
+            return;
         }
     }
-    if (entity_e != nullptr && !has_found_entity) {
-        if (entity_e->get_type() >= 12 && entity_e->get_type() <= 14) {
+    if (entity_e != nullptr) {
+        if (is_entity_pickupable(entity_e->get_type())) {
             player->set_held_item_texture(entity_e->get_texture());
             entity_e->set_type(-1);
+            return;
         }
     }
-    if (entity_w != nullptr && !has_found_entity) {
-        if (entity_w->get_type() >= 12 && entity_w->get_type() <= 14) {
+    if (entity_w != nullptr) {
+        if (is_entity_pickupable(entity_w->get_type())) {
             player->set_held_item_texture(entity_w->get_texture());
             entity_w->set_type(-1);
+            return;
         }
-    } else {
-        std::cout << "no nearby entities" << std::endl;
-        return;
     }
+
+    std::cout << "no nearby entities" << std::endl;
+    return;
 }
 
 bool handle_entity_collision(Entity* e) {
@@ -112,9 +116,23 @@ bool handle_entity_collision(Entity* e) {
         e->set_type(-1);
         return false;
     } else if (e->get_type() == 22) {
-        // TODO make combat more interesting?
-        e->set_type(-1);
-        return true;
+        std::cout << "off item texture: " << player->get_off_item_texture() << std::endl;
+        if (player->get_off_item_texture() == T_AXE) {
+            e->set_state(e->get_state() - 1);
+        } else if (player->get_off_item_texture() == T_SWORD0) {
+            e->set_state(e->get_state() - 2);
+        } else if (player->get_off_item_texture() == T_SWORD1) {
+            e->set_state(e->get_state() - 3);
+        } else if (player->get_off_item_texture() == T_SWORD2) {
+            e->set_state(e->get_state() - 4);
+        }
+        std::cout << "hit enemy: " << e->get_state() << std::endl;
+        if (e->get_state() <= 0) {
+            e->set_type(-1);
+            return false;
+        } else {
+            return true;
+        }
     } else if (e->get_type() == 21) {
         // collided with the ark
         if (player->get_planks_count() > 0) {
@@ -141,6 +159,65 @@ bool handle_entity_collision(Entity* e) {
         }
 
         return true;
+    } else if (e->get_type() == 30) {
+        // hit a tree
+
+        if (player->get_off_item_texture() == T_AXE && e->get_state() <= 0) {
+            e->set_state(5);
+            e->set_texture(T_STUMP);
+            Entity* p = new Entity(g_next_uuid++, player->get_x(), player->get_y(), E_PLANKS, T_PLANK);
+            current_map->register_entity(p, false);
+        }
+
+        return true;
+    } else if (e->get_type() == E_AXE) {
+        // hit axe item
+        if (player->get_off_item_texture() == T_EMPTY) {
+            player->set_off_item_texture(T_AXE);
+        } else {
+            int tx = player->get_off_item_texture();
+            int t = get_entity_type_from_texture(tx);
+            player->set_off_item_texture(T_AXE);
+            Entity* f = new Entity(g_next_uuid++, player->get_x(), player->get_y(), t, tx);
+            current_map->register_entity(f, false);
+        }
+        e->set_type(-1);
+    } else if (e->get_type() == E_SWORD0) {
+        // hit sword 0 item
+        if (player->get_off_item_texture() == T_EMPTY) {
+            player->set_off_item_texture(T_SWORD0);
+        } else {
+            int tx = player->get_off_item_texture();
+            int t = get_entity_type_from_texture(tx);
+            player->set_off_item_texture(T_SWORD0);
+            Entity* f = new Entity(g_next_uuid++, player->get_x(), player->get_y(), t, tx);
+            current_map->register_entity(f, false);
+        }
+        e->set_type(-1);
+    } else if (e->get_type() == E_SWORD1) {
+        // hit sword 1 item
+        if (player->get_off_item_texture() == T_EMPTY) {
+            player->set_off_item_texture(T_SWORD1);
+        } else {
+            int tx = player->get_off_item_texture();
+            int t = get_entity_type_from_texture(tx);
+            player->set_off_item_texture(T_SWORD1);
+            Entity* f = new Entity(g_next_uuid++, player->get_x(), player->get_y(), t, tx);
+            current_map->register_entity(f, false);
+        }
+        e->set_type(-1);
+    } else if (e->get_type() == E_SWORD2) {
+        // hit sword 2 item
+        if (player->get_off_item_texture() == T_EMPTY) {
+            player->set_off_item_texture(T_SWORD2);
+        } else {
+            int tx = player->get_off_item_texture();
+            int t = get_entity_type_from_texture(tx);
+            player->set_off_item_texture(T_SWORD2);
+            Entity* f = new Entity(g_next_uuid++, player->get_x(), player->get_y(), t, tx);
+            current_map->register_entity(f, false);
+        }
+        e->set_type(-1);
     }
 
     return false;

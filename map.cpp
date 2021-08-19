@@ -146,8 +146,9 @@ Map::Map(std::string path) {
                 Entity* e = new Entity(g_next_uuid++, x, y, 2, type);
                 entities.push_back(e);
             } else if (type == 63) {
-                // coin
+                // enemy
                 Entity* e = new Entity(g_next_uuid++, x, y, 22, type);
+                e->set_state(4);
                 entities.push_back(e);
             } else if (type == 64) {
                 if (ark.on_map) {
@@ -159,6 +160,34 @@ Map::Map(std::string path) {
                 ark.x = x;
                 ark.y = y;
                 ark.on_map = true;
+                entities.push_back(e);
+            } else if (type == 52) {
+                // heart
+                Entity* e = new Entity(g_next_uuid++, x, y, 3, type);
+                entities.push_back(e);
+            } else if (type == 65) {
+                // heart
+                Entity* e = new Entity(g_next_uuid++, x, y, 15, type);
+                entities.push_back(e);
+            } else if (type == 92) {
+                // tree
+                Entity* e = new Entity(g_next_uuid++, x, y, 30, type);
+                entities.push_back(e);
+            } else if (type == 71) {
+                // heart
+                Entity* e = new Entity(g_next_uuid++, x, y, 40, type);
+                entities.push_back(e);
+            } else if (type == 72) {
+                // heart
+                Entity* e = new Entity(g_next_uuid++, x, y, 41, type);
+                entities.push_back(e);
+            } else if (type == 73) {
+                // heart
+                Entity* e = new Entity(g_next_uuid++, x, y, 42, type);
+                entities.push_back(e);
+            } else if (type == 74) {
+                // heart
+                Entity* e = new Entity(g_next_uuid++, x, y, 43, type);
                 entities.push_back(e);
             }
         }

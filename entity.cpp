@@ -8,17 +8,20 @@ void Entity::tick_self() {
     bool valid;
 
     switch(this->get_type()) {
-    case 12: // cow
-    case 13: // pig
-    case 14: // sheep
+    case E_COW: // cow
+    case E_PIG: // pig
+    case E_SHEEP: // sheep
+    case E_CHICKEN: // chicken
         valid = update_randomwalk_ai(this, dx, dy);
         break;
-    case 22:
+    case E_ENEMY:
         valid = update_aggressive_ai(this, dx, dy);
         break;
+    case E_TREE:
+        tick_tree(this);
+        return;
     default:
         return;
-        break;
     }
 
     if (!valid) {
@@ -36,7 +39,7 @@ void Entity::tick_self() {
     if (entity != nullptr) {
         // something got hit by this
         // TODO check if it was the ark and if so, game end
-        if (entity->get_type() == 21) {
+        if (entity->get_type() == E_ENEMY) {
             std::cout << "enemy hit ark" << std::endl;
             if (ark.cows > 0) {
                 ark.cows--;
@@ -57,7 +60,7 @@ void Entity::tick_self() {
     if (nx == player->get_x() && ny == player->get_y()) {
         // it tried to hit you
         std::cout << "entity hit player" << std::endl;
-        if (this->get_type() == 22) {
+        if (this->get_type() == E_ENEMY) {
             player->set_hearts(player->get_hearts() - 1);
         }
         return;
@@ -65,6 +68,18 @@ void Entity::tick_self() {
 
     x = nx;
     y = ny;
+}
+
+void tick_tree(Entity* e) {
+    if (e->get_state() > 0) {
+        e->set_state(e->get_state() - 1);
+    }
+
+    if (e->get_state() <= 0) {
+        e->set_texture(T_TREE);
+    } else {
+        e->set_texture(T_STUMP);
+    }
 }
 
 bool update_randomwalk_ai(Entity* e, int& dx, int& dy) {
@@ -86,6 +101,7 @@ bool update_randomwalk_ai(Entity* e, int& dx, int& dy) {
     return true;
 }
 
+#define ENEMIES_NO_AI
 bool update_aggressive_ai(Entity* e, int& dx, int& dy) {
     // calculate direction and clamp it
     // TODO prevent moving diagonally

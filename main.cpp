@@ -31,6 +31,8 @@ bool process_key_special();
 bool process_key_pause();
 bool process_key_credits();
 bool process_key_dialogue();
+bool process_key_save_notif();
+bool process_key_confirm_quit();
 sf::Clock input_timer;
 
 int main() {
@@ -48,9 +50,11 @@ int main() {
     input_timer.restart();
     player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
     game = new GameManager(); // this *should* alter the value of current_map
-    ark = {0, 0, 0, 0, -1, -1, false};
+//    ark = {0, 0, 0, 0, -1, -1, false};
+    ark = {6, 2, 1, 0, 1, -1, -1, false, false};
     active_dialogue = nullptr;
-    game->alter_game_state(GameManager::MAIN_MENU);
+//    game->alter_game_state(GameManager::MAIN_MENU);
+    game->alter_game_state(GameManager::NORMAL_PLAY);
 
     while (window.isOpen()) {
         window.clear();
@@ -92,6 +96,8 @@ int main() {
             draw_credits();
             break;
         case GameManager::PAUSED:
+        case GameManager::CONFIRM_QUIT:
+        case GameManager::CONFIRM_SAVE:
         case GameManager::DIALOGUE:
         case GameManager::NORMAL_PLAY:
             draw_current_map();
@@ -121,6 +127,8 @@ int main() {
         sf::Sprite sprite(texture);
         if (game->get_game_state() == GameManager::NORMAL_PLAY ||
             game->get_game_state() == GameManager::PAUSED ||
+            game->get_game_state() == GameManager::CONFIRM_QUIT ||
+            game->get_game_state() == GameManager::CONFIRM_SAVE ||
             game->get_game_state() == GameManager::DIALOGUE) {
             sprite.scale(2, 2);
             sprite.setPosition(-16 * 20, -16 * 15);
@@ -132,11 +140,17 @@ int main() {
             game->get_game_state() == GameManager::DIALOGUE) {
             draw_hud();
         }
-        if (game->get_game_state() == GameManager::PAUSED) {
+        if (game->get_game_state() == GameManager::PAUSED ||
+            game->get_game_state() == GameManager::CONFIRM_QUIT ||
+            game->get_game_state() == GameManager::CONFIRM_SAVE) {
             draw_pause_menu();
         }
         if (game->get_game_state() == GameManager::DIALOGUE) {
             draw_dialogue();
+        } else if (game->get_game_state() == GameManager::CONFIRM_QUIT) {
+            draw_quit_confirm();
+        } else if (game->get_game_state() == GameManager::CONFIRM_SAVE) {
+            draw_save_notif();
         }
 
         window.display();
@@ -182,13 +196,13 @@ void poll_input_direct() {
         state = process_key_pause();
         break;
     case GameManager::CONFIRM_QUIT:
-        // TODO process confirm quit
+        state = process_key_confirm_quit();
         break;
     case GameManager::CONFIRM_SAVE:
-        // TODO process save notif
+        state = process_key_save_notif();
         break;
     case GameManager::DIALOGUE:
-        process_key_dialogue();
+        state = process_key_dialogue();
         break;
     default:
         break;
@@ -291,9 +305,10 @@ bool process_key_pause() {
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
         // TODO save
         std::cout << "saved" << std::endl;
+        game->alter_game_state(GameManager::CONFIRM_SAVE);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         // quit to menu
-        game->alter_game_state(GameManager::MAIN_MENU);
+        game->alter_game_state(GameManager::CONFIRM_QUIT);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
         game->alter_game_state(GameManager::NORMAL_PLAY);
     } else {
@@ -327,6 +342,27 @@ bool process_key_dialogue() {
         active_dialogue = nullptr;
         dialogue_state = -1;
         game->alter_game_state(GameManager::NORMAL_PLAY);
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+bool process_key_save_notif() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+        game->alter_game_state(GameManager::PAUSED);
+    } else {
+        return false;
+    }
+    return true;
+}
+
+bool process_key_confirm_quit() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+        game->alter_game_state(GameManager::MAIN_MENU);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+        game->alter_game_state(GameManager::PAUSED);
     } else {
         return false;
     }

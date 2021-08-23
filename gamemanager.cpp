@@ -80,7 +80,9 @@ bool GameManager::timer_tick() {
             }
             if (is_timer_running) {
                 should_tick = true;
-                turns_remaining--;
+                if (ark.exists) {
+                    turns_remaining--;
+                }
             }
         }
         if (should_tick && current_map != nullptr) {

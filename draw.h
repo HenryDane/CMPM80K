@@ -23,6 +23,8 @@ void draw_hud();
 void draw_credits();
 void draw_opening_curscene();
 void draw_dialogue();
+void draw_save_notif();
+void draw_quit_confirm();
 
 extern sf::Font font;
 

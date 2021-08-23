@@ -115,7 +115,9 @@ bool handle_entity_collision(Entity* e) {
         player->set_hearts(player->get_hearts() + 1);
         e->set_type(-1);
         return false;
-    } else if (e->get_type() == 22) {
+    } else if (e->get_type() == E_ENEMY0 ||
+               e->get_type() == E_ENEMY1 ||
+               e->get_type() == E_ENEMY2) {
         std::cout << "off item texture: " << player->get_off_item_texture() << std::endl;
         if (player->get_off_item_texture() == T_AXE) {
             e->set_state(e->get_state() - 1);
@@ -125,6 +127,10 @@ bool handle_entity_collision(Entity* e) {
             e->set_state(e->get_state() - 3);
         } else if (player->get_off_item_texture() == T_SWORD2) {
             e->set_state(e->get_state() - 4);
+        } else if (player->get_off_item_texture() == T_EMPTY) {
+            if (rand() % 100 < 50) {
+                e->set_state(e->get_state() - 1);
+            }
         }
         std::cout << "hit enemy: " << e->get_state() << std::endl;
         if (e->get_state() <= 0) {

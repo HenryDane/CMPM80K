@@ -30,6 +30,7 @@ void draw_current_map() {
 }
 
 void draw_entities() {
+    return;
     int dx = 20 - player->get_x();
     int dy = 15 - player->get_y();
     current_map->acquire();
@@ -49,7 +50,7 @@ void draw_player() {
 }
 
 void draw_hud() {
-    const float xoff = 128.0f;
+    const float xoff = 16.0f;
     char tmp[16];
 
     sf::RectangleShape background;
@@ -108,11 +109,15 @@ void draw_hud() {
 
     sf::Text timer_text;
     int _tr = game->get_turns_remaining();
-    if (_tr > 999) {
-        timer_text.setString("TIMER >999");
+    if (ark.exists) {
+        if (_tr > 999) {
+            timer_text.setString("TIMER >999");
+        } else {
+            sprintf(tmp, "TIMER x%.3d", _tr);
+            timer_text.setString(tmp);
+        }
     } else {
-        sprintf(tmp, "TIMER x%.3d", _tr);
-        timer_text.setString(tmp);
+        timer_text.setString("TIMER OFF");
     }
     timer_text.setCharacterSize(14);
     timer_text.setPosition(256 + xoff, 64);
@@ -137,11 +142,59 @@ void draw_hud() {
     if (game->get_game_state() != GameManager::NORMAL_PLAY) key_label.setColor(sf::Color(128, 128, 128, 255));
     renderWindow->draw(key_label);
 
-    //sf::Sprite key_label;
-//    key_label.setTexture(textures.at(T_KEY_X));
-//    key_label.setPosition(88 + xoff, 8);
-//    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-//    renderWindow->draw(key_label);
+    if (!ark.exists) {
+        return;
+    }
+
+    sf::Text ark_text;
+    if (ark.planks_count <= 99) {
+        sprintf(tmp, "ARK HP:%.2d", ark.planks_count);
+        ark_text.setString(tmp);
+    } else {
+        ark_text.setString("ARK HP:++");
+    }
+    ark_text.setCharacterSize(14);
+    ark_text.setPosition(400 + xoff, 32);
+    ark_text.setFillColor(sf::Color(255, 255, 255, 255));
+    ark_text.setFont(font);
+    renderWindow->draw(ark_text);
+
+    sf::Sprite ark_sprite;
+    ark_sprite.setTexture(textures.at(T_PIG));
+    ark_sprite.setPosition(400 + xoff, 64);
+    ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(ark_sprite);
+    sprintf(tmp, "%.1d/2", ark.pigs);
+    ark_text.setString(tmp);
+    ark_text.setPosition(424 + xoff, 64);
+    renderWindow->draw(ark_text);
+
+    ark_sprite.setTexture(textures.at(T_COW));
+    ark_sprite.setPosition(464 + xoff, 64);
+    ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(ark_sprite);
+    sprintf(tmp, "%.1d/2", ark.cows);
+    ark_text.setString(tmp);
+    ark_text.setPosition(488 + xoff, 64);
+    renderWindow->draw(ark_text);
+
+    ark_sprite.setTexture(textures.at(T_SHEEP));
+    ark_sprite.setPosition(528 + xoff, 64);
+    ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(ark_sprite);
+    sprintf(tmp, "%.1d/2", ark.sheep);
+    ark_text.setString(tmp);
+    ark_text.setPosition(552 + xoff, 64);
+    renderWindow->draw(ark_text);
+
+    ark_sprite.setTexture(textures.at(T_CHICKEN));
+    ark_sprite.setPosition(528 + xoff, 32);
+    ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(ark_sprite);
+    sprintf(tmp, "%.1d/2", ark.chickens);
+    ark_text.setString(tmp);
+    ark_text.setPosition(552 + xoff, 32);
+    renderWindow->draw(ark_text);
 }
 
 /*
@@ -507,6 +560,76 @@ void draw_loading_screen() {
 
 /*
 ===================================================================================================
+  DRAWING CONFIRM BOXES
+===================================================================================================
+*/
+
+void draw_save_notif() {
+    sf::RectangleShape background;
+    background.setPosition(64, 480-8*16);
+    background.setSize(sf::Vector2f(640 - 128, 6*16));
+    background.setFillColor(sf::Color(0, 0, 0, 255));
+    background.setOutlineColor(sf::Color(255, 255, 255, 255));
+    background.setOutlineThickness(3);
+    renderWindow->draw(background);
+
+    sf::Text notif;
+    notif.setString("Game saving is un-implemented. Your game has NOT been \nsaved.");
+    notif.setPosition(64+8,480-(8*16)+8);
+    notif.setFillColor(sf::Color(255, 255, 255, 255));
+    notif.setFont(font);
+    notif.setCharacterSize(14);
+    renderWindow->draw(notif);
+
+    sf::Sprite key_skip_label;
+    key_skip_label.setTexture(textures.at(T_KEY_X));
+    key_skip_label.setPosition(468, 428);
+    key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(key_skip_label);
+
+    notif.setString("CONTINUE");
+    notif.setPosition(468+24, 428);
+    renderWindow->draw(notif);
+}
+
+void draw_quit_confirm() {
+    sf::RectangleShape background;
+    background.setPosition(64, 480-8*16);
+    background.setSize(sf::Vector2f(640 - 128, 6*16));
+    background.setFillColor(sf::Color(0, 0, 0, 255));
+    background.setOutlineColor(sf::Color(255, 255, 255, 255));
+    background.setOutlineThickness(3);
+    renderWindow->draw(background);
+
+    sf::Text notif;
+    notif.setString("This will quit without saving. Make sure you have \nsaved the game before continuing. OK to quit?");
+    notif.setPosition(64+8,480-(8*16)+8);
+    notif.setFillColor(sf::Color(255, 255, 255, 255));
+    notif.setFont(font);
+    notif.setCharacterSize(14);
+    renderWindow->draw(notif);
+
+    sf::Sprite key_skip_label;
+    key_skip_label.setTexture(textures.at(T_KEY_X));
+    key_skip_label.setPosition(468+32, 428);
+    key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
+    renderWindow->draw(key_skip_label);
+
+    notif.setString("QUIT");
+    notif.setPosition(468+24+32, 428);
+    renderWindow->draw(notif);
+
+    key_skip_label.setTexture(textures.at(T_KEY_Z));
+    key_skip_label.setPosition(468+32-96, 428);
+    renderWindow->draw(key_skip_label);
+
+    notif.setString("CANCEL");
+    notif.setPosition(468+24+32-96, 428);
+    renderWindow->draw(notif);
+}
+
+/*
+===================================================================================================
   DRAWING DIALOGUE
 ===================================================================================================
 */
@@ -538,36 +661,33 @@ void draw_dialogue() {
     background.setOutlineThickness(3);
     renderWindow->draw(background);
 
-    sf::Sprite right_label;
-    right_label.setTexture(textures.at(T_RIGHT));
-    right_label.setPosition(556, 428);
-    right_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(right_label);
+    sf::Text skip_label;
+    skip_label.setString("SKIP");
+    skip_label.setPosition(532, 428);
+    skip_label.setCharacterSize(14);
+    skip_label.setFillColor(sf::Color(255, 255, 255));
+    skip_label.setFont(font);
+    renderWindow->draw(skip_label);
 
     sf::Sprite key_next_label;
     key_next_label.setTexture(textures.at(T_KEY_Z));
-    key_next_label.setPosition(536, 428);
+    key_next_label.setPosition(512, 428);
     key_next_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderWindow->draw(key_next_label);
 
-    sf::Sprite down_label;
-    down_label.setTexture(textures.at(T_DOWN));
-    down_label.setPosition(488, 428);
-    down_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(down_label);
+    skip_label.setString("CONTINUE");
+    skip_label.setPosition(420, 428);
+    renderWindow->draw(skip_label);
 
     sf::Sprite key_skip_label;
     key_skip_label.setTexture(textures.at(T_KEY_X));
-    key_skip_label.setPosition(468, 428);
+    key_skip_label.setPosition(398, 428);
     key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderWindow->draw(key_skip_label);
 
     sf::Text t = active_dialogue->text[dialogue_state];
-    //std::cout << t.getString().toAnsiString() << std::endl;
     t.setPosition(64+8,480-(8*16)+8);
-    t.setCharacterSize(14);
     t.setFillColor(sf::Color(255, 255, 255, 255));
-    t.setFont(font);
     renderWindow->draw(t);
 }
 

@@ -95,12 +95,13 @@ Map::Map(std::string path) {
             }
         } else if (tokens[0] == "PORTAL") {
             std::vector<std::string> dimtokens = split_by_char(tokens[1], ',');
-            if (dimtokens.size() == 3) {
+            if (dimtokens.size() == 4) {
                 this->portals.push_back(new Portal(std::stoi(dimtokens[0]) / 16,
                                                    std::stoi(dimtokens[1]) / 16,
-                                                   dimtokens[2]));
+                                                   dimtokens[2],
+                                                   std::stoi(dimtokens[3])));
             } else {
-                std::cout << "MALFORMED START TOKEN IN FILE: " << path << std::endl;
+                std::cout << "MALFORMED PORTAL TOKEN IN FILE: " << path << std::endl;
                 exit(1033);
             }
         } else if (tokens[0] == "DIALOGUE") {
@@ -147,10 +148,20 @@ Map::Map(std::string path) {
                 entities.push_back(e);
             } else if (type == 63) {
                 // enemy
-                Entity* e = new Entity(g_next_uuid++, x, y, 22, type);
+                Entity* e = new Entity(g_next_uuid++, x, y, E_ENEMY0, type);
                 e->set_state(4);
                 entities.push_back(e);
-            } else if (type == 64) {
+            } else if (type == 94) {
+                // enemy
+                Entity* e = new Entity(g_next_uuid++, x, y, E_ENEMY1, type);
+                e->set_state(6);
+                entities.push_back(e);
+            }else if (type == 95) {
+                // enemy
+                Entity* e = new Entity(g_next_uuid++, x, y, E_ENEMY2, type);
+                e->set_state(9);
+                entities.push_back(e);
+            }else if (type == 64) {
                 if (ark.on_map) {
                     // there can only BE ONE!!!
                     continue;
@@ -254,6 +265,9 @@ bool Map::is_collideable(uint32_t x, uint32_t y, bool is_player, bool _lock) {
             // hit a portal
             if (is_player) {
                 game->mark_portal(p);
+                if (p->tutorial_end) {
+                    ark.exists = true;
+                }
                 if (_lock) {
                     mutex.unlock();
                 }
@@ -391,29 +405,35 @@ Dialogue::~Dialogue() {
 }
 
 void Dialogue::add_text(std::string str) {
-    // NOTE max width = 496
-    // split string so we can word wrap
-    std::vector<std::string> words = split_by_char(str, ' ');
-
-    // prepare text object
-    std::string current_text = "";
     sf::Text t;
-    t.setCharacterSize(14);
     t.setFont(font);
+    t.setCharacterSize(14);
+    t.setFillColor(sf::Color(255,255,255));
+    t.setString(str);
+    t.setPosition(64+8,480-(8*16)+8);
 
-    for (int i = 0; i < words.size(); i++) {
-        std::string new_text = current_text + " " + words[i];
-
-        t.setString(new_text);
-        sf::FloatRect fr = t.getLocalBounds();
-        if (fr.width <= 496) {
-            current_text = new_text;
-        } else {
-            new_text = current_text + "\n " + words[i];
-            current_text = new_text;
-        }
+    sf::FloatRect fr = t.getLocalBounds();
+    if (fr.width <= 496) {
+        text.push_back(t);
+        return;
     }
 
-    text.push_back(t);
 
+    // iterate over every character in the string
+    // check if the current character is out of bounds
+    // if so, go back to prev space and insert a newline
+    // if the character is a space, save it to most recent
+    int most_recent_space = 0;
+    for (auto i = 0u; i < t.getString().getSize(); i++) {
+        if (t.findCharacterPos(i).x > 512) {
+//            str.insert(most_recent_space, "\n");
+            str[most_recent_space] = '\n';
+            t.setString(str);
+        }
+        if (str.at(i) == ' ') {
+            most_recent_space = i;
+        }
+
+    }
+    text.push_back(t);
 }

@@ -14,7 +14,9 @@ void Entity::tick_self() {
     case E_CHICKEN: // chicken
         valid = update_randomwalk_ai(this, dx, dy);
         break;
-    case E_ENEMY:
+    case E_ENEMY0:
+    case E_ENEMY1:
+    case E_ENEMY2:
         valid = update_aggressive_ai(this, dx, dy);
         break;
     case E_TREE:
@@ -39,7 +41,7 @@ void Entity::tick_self() {
     if (entity != nullptr) {
         // something got hit by this
         // TODO check if it was the ark and if so, game end
-        if (entity->get_type() == E_ENEMY) {
+        if (entity->get_type() == E_ARK) {
             std::cout << "enemy hit ark" << std::endl;
             if (ark.cows > 0) {
                 ark.cows--;
@@ -60,8 +62,11 @@ void Entity::tick_self() {
     if (nx == player->get_x() && ny == player->get_y()) {
         // it tried to hit you
         std::cout << "entity hit player" << std::endl;
-        if (this->get_type() == E_ENEMY) {
+        if (this->get_type() == E_ENEMY0 ||
+            this->get_type() == E_ENEMY1 ||
+            this->get_type() == E_ENEMY2) {
             player->set_hearts(player->get_hearts() - 1);
+            // TODO setup blink
         }
         return;
     }

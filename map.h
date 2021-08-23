@@ -12,11 +12,13 @@ class Portal {
 public:
     int x, y;
     std::string name;
+    bool tutorial_end;
 
-    Portal(int x, int y, std::string name) {
+    Portal(int x, int y, std::string name, bool tutorial_end) {
         this->x = x;
         this->y = y;
         this->name = name;
+        this->tutorial_end = tutorial_end;
     }
 };
 

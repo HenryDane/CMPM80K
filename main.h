@@ -39,15 +39,21 @@
 #define T_SWORD0   72
 #define T_SWORD1   73
 #define T_SWORD2   74
+#define T_PIG      42
+#define T_COW      41
+#define T_SHEEP    43
+#define T_CHICKEN  65
 
 struct ark_t {
     int planks_count;
+    int chickens;
     int cows;
     int sheep;
     int pigs;
 
     int x, y;
     bool on_map;
+    bool exists;
 };
 
 extern sf::RenderTexture renderTexture;

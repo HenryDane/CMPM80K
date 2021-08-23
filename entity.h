@@ -20,7 +20,10 @@
     40 -> axe
 */
 
-#define E_ENEMY    22
+#define E_ARK      21
+#define E_ENEMY0   22
+#define E_ENEMY1   23
+#define E_ENEMY2   24
 #define E_COW      12
 #define E_PIG      13
 #define E_SHEEP    14
@@ -34,11 +37,11 @@
 
 class Entity {
 private:
-    int x, y, type, texture, state;
+    int x, y, type, texture, state, blink;
     uint32_t id;
 public:
     Entity() {
-        x = -1; y = -1; type = 0; id = 0; state = 0;
+        x = -1; y = -1; type = 0; id = 0; state = 0; blink = 0;
     }
     Entity(int id, int x, int y, int type, int texture) {
         this->x = x;
@@ -47,6 +50,7 @@ public:
         this->texture = texture;
         this->id = id;
         this->state = 0;
+        this->blink = 0;
     }
     ~Entity() { };
 
@@ -55,11 +59,13 @@ public:
     int get_texture() { return texture; }
     int get_type() { return type; }
     int get_state() { return state; }
+    int get_blink() { return blink; }
     void set_x(int x) { this->x = x; }
     void set_y(int y) { this->y = y; }
     void set_texture(int texture) { this->texture = texture; }
     void set_type(int type) { this->type = type; }
     void set_state(int state) { this->state = state; }
+    void set_blink(int blink) { this->blink = blink; }
 
     uint32_t get_id() { return id; }
 

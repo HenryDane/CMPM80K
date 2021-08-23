@@ -53,8 +53,7 @@ int main() {
 //    ark = {0, 0, 0, 0, -1, -1, false};
     ark = {6, 2, 1, 0, 1, -1, -1, false, false};
     active_dialogue = nullptr;
-//    game->alter_game_state(GameManager::MAIN_MENU);
-    game->alter_game_state(GameManager::NORMAL_PLAY);
+    game->alter_game_state(GameManager::MAIN_MENU);
 
     while (window.isOpen()) {
         window.clear();

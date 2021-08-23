@@ -37,7 +37,8 @@ public:
 class Map {
 private:
     uint32_t width, height;
-    uint8_t* data;
+    uint16_t* data;
+    uint16_t* decoration;
     int startx, starty;
     std::vector<Entity*> entities;
     std::vector<Portal*> portals;
@@ -56,8 +57,9 @@ public:
     int get_start_x();
     int get_start_y();
     std::string get_name();
-    uint8_t get_tile_at(uint32_t w, uint32_t h);
-    void set_tile_at(uint32_t w, uint32_t h, uint8_t tile);
+    uint16_t get_tile_at(uint32_t w, uint32_t h);
+    uint16_t get_decor_at(uint32_t w, uint32_t h);
+    void set_tile_at(uint32_t w, uint32_t h, uint16_t tile);
     bool is_collideable(uint32_t w, uint32_t h, bool is_player, bool _lock = true);
     int get_interaction(uint32_t w, uint32_t h);
     Entity* check_entity_collision(int nx, int ny, bool _lock = true);

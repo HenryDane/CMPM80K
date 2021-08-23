@@ -51,7 +51,9 @@ GameManager::GameManager() {
 }
 
 GameManager::~GameManager() {
-
+    for (auto & [key, value] : map_table) {
+        delete value;
+    }
 }
 
 void GameManager::edit_timer_state(bool state) {
@@ -96,6 +98,8 @@ bool GameManager::timer_tick() {
         std::this_thread::sleep_for(std::chrono::milliseconds(1250));
         current_map->clean_entity_list();
     }
+
+    return true;
 }
 
 void GameManager::await_shutdown() {

@@ -11,7 +11,7 @@
 Map::Map() {
     width = 64;
     height = 64;
-    data = new uint8_t[width * height];
+    data = new uint16_t[width * height];
     for (size_t i = 0; i < width * height; i++) {
         data[i] = 0;
     }
@@ -37,7 +37,7 @@ Map::Map(std::string path) {
     entities.clear();
 
     // temporary entity data
-    uint8_t* entity_data;
+    uint16_t* entity_data;
 
     // fetch a line
     for(std::string line; getline( mapfile, line ); ) {
@@ -56,8 +56,10 @@ Map::Map(std::string path) {
             if (dimtokens.size() == 2) {
                 this->width = std::stoi(dimtokens[0]);
                 this->height = std::stoi(dimtokens[1]);
-                this->data = new uint8_t[width * height];
-                entity_data = new uint8_t[width * height];
+                this->data = new uint16_t[width * height];
+                this->decoration = new uint16_t[width * height];
+                for (int i = 0; i < width*height; decoration[i++] = -1);
+                entity_data = new uint16_t[width * height];
             } else {
                 std::cout << "MALFORMED MAPDIM TOKEN IN FILE: " << path << std::endl;
                 exit(1033);
@@ -69,8 +71,19 @@ Map::Map(std::string path) {
                 exit(1034);
             } else {
                 for (size_t i = 0; i < values.size(); i++) {
-                    uint8_t d = (uint8_t) std::stoi(values[i]);
+                    uint16_t d = (uint16_t) std::stoi(values[i]);
                     data[i] = d - 1;
+                }
+            }
+        } else if (tokens[0] == "DECORATION") {
+            std::vector<std::string> values = split_by_char(tokens[1], ',');
+            if (values.size() != width * height) {
+                std::cout << "TILES ENTRY HAS INCORRECT LENGTH: " << path << std::endl;
+                exit(1034);
+            } else {
+                for (size_t i = 0; i < values.size(); i++) {
+                    uint16_t d = (uint16_t) std::stoi(values[i]);
+                    decoration[i] = d - 1;
                 }
             }
         } else if (tokens[0] == "ENTITIES") {
@@ -80,7 +93,7 @@ Map::Map(std::string path) {
                 exit(1034);
             } else {
                 for (size_t i = 0; i < values.size(); i++) {
-                    uint8_t e = (uint8_t) std::stoi(values[i]);
+                    uint16_t e = (uint16_t) std::stoi(values[i]);
                     entity_data[i] = e - 1;
                 }
             }
@@ -210,6 +223,16 @@ Map::Map(std::string path) {
 Map::~Map() {
     std::scoped_lock<std::mutex> lock(mutex);
     delete[] this->data;
+    delete[] this->decoration;
+    for (int i = 0; i < entities.size(); i++) {
+        delete entities[i];
+    }
+    for (int i = 0; i < portals.size(); i++) {
+        delete portals[i];
+    }
+    for (int i = 0; i < dialogue.size(); i++) {
+        delete dialogue[i];
+    }
 }
 
 uint32_t Map::get_width() {
@@ -222,7 +245,7 @@ uint32_t Map::get_height() {
     return height;
 }
 
-uint8_t Map::get_tile_at(uint32_t x, uint32_t y) {
+uint16_t Map::get_tile_at(uint32_t x, uint32_t y) {
     std::scoped_lock<std::mutex> lock(mutex);
     if (y >= height || x >= width) {
         return 0;
@@ -230,7 +253,15 @@ uint8_t Map::get_tile_at(uint32_t x, uint32_t y) {
     return data[y * width + x];
 }
 
-void Map::set_tile_at(uint32_t x, uint32_t y, uint8_t tile) {
+uint16_t Map::get_decor_at(uint32_t x, uint32_t y) {
+    std::scoped_lock<std::mutex> lock(mutex);
+    if (y >= height || x >= width) {
+        return 0;
+    }
+    return decoration[y * width + x];
+}
+
+void Map::set_tile_at(uint32_t x, uint32_t y, uint16_t tile) {
     std::scoped_lock<std::mutex> lock(mutex);
     if (y >= height || x >= width) {
         return;
@@ -251,12 +282,41 @@ bool Map::is_collideable(uint32_t x, uint32_t y, bool is_player, bool _lock) {
         return true;
     }
 
-    uint8_t t = data[y * width + x];
-    if (t % 11 < 5) {
+    uint16_t t = data[y * width + x];
+    if (t < 48) {
+        if (t % 11 < 5) {
+            if (_lock) {
+                mutex.unlock();
+            }
+            return true;
+        }
+    } else if (t == 119 || t == 185 || t == 218) {
+        // do nothing
+    } else if (t == 259 || t == 260 || t == 270 || t == 271) {
         if (_lock) {
             mutex.unlock();
         }
         return true;
+    } else if (t >= 99 && t <= 109) {
+        if (_lock) {
+            mutex.unlock();
+        }
+        return true;
+    } else if ((t >= 110 && t <= 131) ||
+               (t >= 165 && t <= 285)) {
+        if (t % 11 > 7) {
+            if (_lock) {
+                mutex.unlock();
+            }
+            return true;
+        }
+    } else if (t >= 286) {
+        if (t % 11 > 1) {
+            if (_lock) {
+                mutex.unlock();
+            }
+            return true;
+        }
     }
 
     // check portals and dialogue last

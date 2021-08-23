@@ -1,5 +1,4 @@
 import json
-import numpy as np
 import argparse
 
 parser = argparse.ArgumentParser(description='A tool for converting from Tiled\'s .json format to .map files')

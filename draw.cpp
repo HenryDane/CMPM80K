@@ -18,7 +18,7 @@ void draw_current_map() {
     int dy = 15 - player->get_y();
     for (uint32_t y = 0; y < current_map->get_height(); y++) {
         for (uint32_t x = 0; x < current_map->get_width(); x++) {
-            uint8_t t = current_map->get_tile_at(x, y);
+            uint16_t t = current_map->get_tile_at(x, y);
             if (t > textures.size()) {
                 continue;
             } else if (t % 3 <= 2 && t <= 24) {
@@ -27,10 +27,18 @@ void draw_current_map() {
             jumpwr_xyt(x + dx, y + dy, t);
         }
     }
+    for (uint32_t y = 0; y < current_map->get_height(); y++) {
+        for (uint32_t x = 0; x < current_map->get_width(); x++) {
+            uint16_t t = current_map->get_decor_at(x, y);
+            if (t > textures.size()) {
+                continue;
+            }
+            jumpwr_xyt(x + dx, y + dy, t);
+        }
+    }
 }
 
 void draw_entities() {
-    return;
     int dx = 20 - player->get_x();
     int dy = 15 - player->get_y();
     current_map->acquire();
@@ -289,6 +297,10 @@ void draw_main_menu() {
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, height_ref + 48);
     renderTexture.draw(text);
+
+    for (int i = 0; i < textures.size(); i++) {
+        jumpwr_xyt(i % 32, i / 32, i);
+    }
 }
 
 void draw_credits() {

@@ -146,8 +146,14 @@ bool handle_entity_collision(Entity* e) {
             player->set_planks_count(0);
         }
 
-        if (player->get_held_item_texture() >= 41 &&
-            player->get_held_item_texture() <= 43) {
+        if (ark.planks_count < 15) {
+            // must have minimum plank count
+            return true;
+        }
+
+        if ((player->get_held_item_texture() >= 41 &&
+            player->get_held_item_texture() <= 43) ||
+            player->get_held_item_texture() == T_CHICKEN) {
             // player is holding animal
             int type = player->get_held_item_texture() - 29;
             if (type == 12) {
@@ -159,6 +165,9 @@ bool handle_entity_collision(Entity* e) {
             } else if (type == 14) {
                 // its a sheep
                 ark.sheep++;
+            } else if (type == 15) {
+                // its a sheep
+                ark.chickens++;
             }
 
             player->set_held_item_texture(T_EMPTY);

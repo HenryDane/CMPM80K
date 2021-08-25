@@ -70,6 +70,7 @@ void GameManager::alter_game_state(GameState new_state) {
     }
 
     this->game_state = new_state;
+    input_timer.restart();
 }
 
 bool GameManager::timer_tick() {

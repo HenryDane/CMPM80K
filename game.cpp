@@ -24,6 +24,21 @@ void exit_game() {
     delete ark_ready;
 }
 
+void game_check_win_loose() {
+    if (player->get_hearts() <= 0 ||
+        game->get_turns_remaining() <= 0 ||
+        ark.planks_count < 0) {
+        // LOSS
+        game->alter_game_state(GameManager::LOOSE_CUTSCENE);
+    }
+
+    if (ark.planks_count >= 15 && ark.cows > 1 && ark.chickens > 1 &&
+        ark.pigs > 1 && ark.sheep > 1) {
+        // WIN
+        game->alter_game_state(GameManager::WIN_CUTSCENE);
+    }
+}
+
 void handle_collide_wall(int dx, int dy) {
     int nx = player->get_x() + dx;
     int ny = player->get_y() + dy;
@@ -177,7 +192,7 @@ bool handle_entity_collision(Entity* e) {
         }
 
         if (!has_ark_second && ark.planks_count >= 15) {
-            has_ark_first = true;
+            has_ark_second = true;
             active_dialogue = ark_ready;
             dialogue_state = 0;
             game->alter_game_state(GameManager::DIALOGUE);
@@ -203,7 +218,7 @@ bool handle_entity_collision(Entity* e) {
             } else if (type == 14) {
                 // its a sheep
                 ark.sheep++;
-            } else if (type == 15) {
+            } else if (type == E_CHICKEN) {
                 // its a sheep
                 ark.chickens++;
             }

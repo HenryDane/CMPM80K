@@ -81,7 +81,10 @@ int main() {
         }
 
         poll_input_direct();
-        game->update();
+        if (game->get_game_state() == GameManager::NORMAL_PLAY) {
+            game->update();
+            game_check_win_loose();
+        }
 
         window.clear();
         switch(game->get_game_state()) {

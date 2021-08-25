@@ -424,6 +424,20 @@ void draw_victory_screen() {
     text.setFont(font);
     text.setPosition(10 + 32, 480 - 32);
     renderTexture.draw(text);
+
+    text.setString("YOU SAVED THE ANIMALS AND THE WORLD.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 300);
+    renderTexture.draw(text);
+    text.setString("GOD HIMSELF THANKS YOU FOR YOUR EFFORT.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 316);
+    renderTexture.draw(text);
+
+    text.setString("THANKS FOR PLAYING THIS GAME.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 348);
+    renderTexture.draw(text);
 }
 
 void draw_defeat_screen() {
@@ -449,6 +463,28 @@ void draw_defeat_screen() {
     text.setFillColor(sf::Color(255, 255, 255));
     text.setFont(font);
     text.setPosition(10 + 32, 480 - 32);
+    renderTexture.draw(text);
+
+    text.setString("IT SEEMS YOU HAVE COME TO AN END.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 300);
+    renderTexture.draw(text);
+    text.setString("YOUR ATTEMPTS TO BUILD AN ARK AND SAVE");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 316);
+    renderTexture.draw(text);
+    text.setString("TWO OF EACH KIND OF ANIMAL WERE NOT");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 332);
+    renderTexture.draw(text);
+    text.setString("SUCCESSFUL.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 348);
+    renderTexture.draw(text);
+
+    text.setString("THANKS FOR PLAYING THIS GAME.");
+    fr = text.getLocalBounds();
+    text.setPosition((640 - fr.width) / 2, 380);
     renderTexture.draw(text);
 }
 

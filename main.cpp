@@ -8,6 +8,7 @@
 #include "draw.h"
 #include "game.h"
 #include "gamemanager.h"
+#include "util.h"
 
 // global variables
 sf::RenderTexture renderTexture;
@@ -23,6 +24,8 @@ GameManager* game;
 Dialogue* active_dialogue;
 int dialogue_state = -1; // <0 -> inactive, >=0 -> active
 
+void reset_game_instance();
+
 // function prototypes
 void poll_input_direct();
 bool process_key_menu();
@@ -36,11 +39,11 @@ bool process_key_confirm_quit();
 sf::Clock input_timer;
 
 int main() {
-    sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(SCREEN_W, SCREEN_H), "CMPM 80K Graphical", sf::Style::Close);
+    sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(SCREEN_W, SCREEN_H), "CMPM 80K Graphical");
     window.setKeyRepeatEnabled(false);
     window.setFramerateLimit(60);
     renderWindow = &window;
-    if (!renderTexture.create(SCREEN_W, SCREEN_H)) {
+    if (!renderTexture.create(SCREEN_W*2, SCREEN_H*2)) {
         std::cout << "could not create render texture!" << std::endl;
         return 1020;
     }
@@ -67,10 +70,11 @@ int main() {
                 float resY = event.size.height;
                 float resX = event.size.width;
 
-                int newH = (WINDOW_WIDTH*resY)/resX;
-                int displace = (newH - WINDOW_HEIGHT)/(-2);
+//                int newH = (WINDOW_WIDTH*resY)/resX;
+//                int displace = (newH - WINDOW_HEIGHT)/(-2);
 
-                window.setView(sf::View(sf::FloatRect(0, displace, WINDOW_WIDTH, newH)));
+//                window.setView(sf::View(sf::FloatRect(0, displace, WINDOW_WIDTH, newH)));
+                window.setView(getLetterboxView( window.getView(), event.size.width, event.size.height ));
             } else if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Tab) {
                     std::cout << "X=" << player->get_x() << " Y=" << player->get_y();
@@ -119,24 +123,6 @@ int main() {
             break;
         }
 
-        // prep the render texture
-        renderTexture.display();
-
-        // get the target texture (where the stuff has been drawn)
-        const sf::Texture& texture = renderTexture.getTexture();
-
-        // draw it to the window
-        sf::Sprite sprite(texture);
-        if (game->get_game_state() == GameManager::NORMAL_PLAY ||
-            game->get_game_state() == GameManager::PAUSED ||
-            game->get_game_state() == GameManager::CONFIRM_QUIT ||
-            game->get_game_state() == GameManager::CONFIRM_SAVE ||
-            game->get_game_state() == GameManager::DIALOGUE) {
-            sprite.scale(2, 2);
-            sprite.setPosition(-16 * 20, -16 * 15);
-        }
-        window.draw(sprite);
-
         if (game->get_game_state() == GameManager::NORMAL_PLAY ||
             game->get_game_state() == GameManager::PAUSED ||
             game->get_game_state() == GameManager::DIALOGUE ||
@@ -156,6 +142,16 @@ int main() {
         } else if (game->get_game_state() == GameManager::CONFIRM_SAVE) {
             draw_save_notif();
         }
+
+        // prep the render texture
+        renderTexture.display();
+
+        // get the target texture (where the stuff has been drawn)
+        const sf::Texture& texture = renderTexture.getTexture();
+
+        // draw it to the window
+        sf::Sprite sprite(texture);
+        window.draw(sprite);
 
         window.display();
     }
@@ -259,6 +255,7 @@ bool process_key_menu() {
             // goto normal gameplay
             // TODO -- make sure this initalizes everything
             std::cout << "update state!" << std::endl;
+            reset_game_instance();
             game->alter_game_state(GameManager::OPEN_CUTSCENE);
             return false;
         } else if (current_menu_sel == 1) {
@@ -370,4 +367,16 @@ bool process_key_confirm_quit() {
     }
 
     return true;
+}
+
+void reset_game_instance() {
+    game->destroy_map_data();
+    delete player;
+    delete ark;
+    ark = new Ark(-1, -1);
+    player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
+    game->initalize_map_data();
+
+    active_dialogue = nullptr;
+    dialogue_state = 0;
 }

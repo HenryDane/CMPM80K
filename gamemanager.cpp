@@ -12,6 +12,22 @@ namespace fs = std::filesystem;
 GameManager::GameManager() {
     current_map = nullptr;
 
+    initalize_map_data();
+
+    timer_thread = std::thread(&GameManager::timer_tick, this);
+}
+
+GameManager::~GameManager() {
+    destroy_map_data();
+}
+
+void GameManager::destroy_map_data() {
+    for (auto & [key, value] : map_table) {
+        delete value;
+    }
+}
+
+void GameManager::initalize_map_data() {
     // open startup.txt
     std::ifstream startfile("asset/startup.txt");
     if (!startfile.is_open()) {
@@ -57,13 +73,6 @@ GameManager::GameManager() {
     player->set_x(current_map->get_start_x());
     player->set_y(current_map->get_start_y());
 
-    timer_thread = std::thread(&GameManager::timer_tick, this);
-}
-
-GameManager::~GameManager() {
-    for (auto & [key, value] : map_table) {
-        delete value;
-    }
 }
 
 void GameManager::edit_timer_state(bool state) {

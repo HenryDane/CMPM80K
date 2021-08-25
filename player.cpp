@@ -11,6 +11,10 @@ Player::Player(int x, int y, int hearts) {
     held_item_texture = T_EMPTY;
 }
 
+Player::~Player() {
+
+}
+
 int Player::get_x() {
     std::scoped_lock<std::mutex> lock(this->mutex);
     return x;

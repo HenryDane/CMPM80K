@@ -28,6 +28,9 @@ public:
 
     void mark_portal(Portal* portal);
     void update();
+
+    void initalize_map_data();
+    void destroy_map_data();
 private:
     // timer and thread information
     bool is_timer_running = false;

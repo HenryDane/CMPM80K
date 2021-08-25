@@ -77,7 +77,7 @@ void draw_hud() {
     background.setPosition(0, 0);
     background.setSize(sf::Vector2f(640, 6*16));
     background.setFillColor(sf::Color(0, 0, 0, 255));
-    renderWindow->draw(background);
+    renderTexture.draw(background);
 
     sf::RectangleShape held_item_frame;
     held_item_frame.setPosition(32 + xoff, 32);
@@ -86,13 +86,13 @@ void draw_hud() {
     held_item_frame.setFillColor(sf::Color(0, 0, 0, 255));
     held_item_frame.setOutlineColor(sf::Color(255, 0, 0, 255));
     held_item_frame.setOutlineThickness(3 / 16.0f);
-    renderWindow->draw(held_item_frame);
+    renderTexture.draw(held_item_frame);
 
     sf::Sprite held_item;
     held_item.setTexture(textures.at(player->get_held_item_texture()));
     held_item.setPosition(32 + 4 + xoff, 32 + 12);
     held_item.setScale(1.5f, 1.5f); // (128 / 4) = 32
-    renderWindow->draw(held_item);
+    renderTexture.draw(held_item);
 
     sf::RectangleShape off_item_frame;
     off_item_frame.setPosition(80 + xoff, 32);
@@ -101,13 +101,13 @@ void draw_hud() {
     off_item_frame.setFillColor(sf::Color(0, 0, 0, 255));
     off_item_frame.setOutlineColor(sf::Color(0, 0, 255, 255));
     off_item_frame.setOutlineThickness(3 / 16.0f);
-    renderWindow->draw(off_item_frame);
+    renderTexture.draw(off_item_frame);
 
     sf::Sprite off_item;
     off_item.setTexture(textures.at(player->get_off_item_texture()));
     off_item.setPosition(80 + 4 + xoff, 32 + 12);
     off_item.setScale(1.5f, 1.5f); // (128 / 4) = 32
-    renderWindow->draw(off_item);
+    renderTexture.draw(off_item);
 
     sf::Text coin_count;
     sprintf(tmp, " COINS x%.3d", player->get_coin_count());
@@ -116,7 +116,7 @@ void draw_hud() {
     coin_count.setPosition(128 + xoff, 32);
     coin_count.setFillColor(sf::Color(255, 255, 255, 255));
     coin_count.setFont(font);
-    renderWindow->draw(coin_count);
+    renderTexture.draw(coin_count);
 
     sf::Text plank_count;
     sprintf(tmp, "PLANKS x%.3d", player->get_planks_count());
@@ -125,7 +125,7 @@ void draw_hud() {
     plank_count.setPosition(128 + xoff, 64);
     plank_count.setFillColor(sf::Color(255, 255, 255, 255));
     plank_count.setFont(font);
-    renderWindow->draw(plank_count);
+    renderTexture.draw(plank_count);
 
     sf::Text timer_text;
     int _tr = game->get_turns_remaining();
@@ -143,7 +143,7 @@ void draw_hud() {
     timer_text.setPosition(256 + xoff, 64);
     timer_text.setFillColor(sf::Color(255, 255, 255, 255));
     timer_text.setFont(font);
-    renderWindow->draw(timer_text);
+    renderTexture.draw(timer_text);
 
     if (player->get_hearts() > 0) {
         for (int i = 0; i < player->get_hearts(); i++) {
@@ -151,7 +151,7 @@ void draw_hud() {
             heart.setTexture(textures.at(T_HEART));
             heart.setPosition(256 + i * 16 * 1.5 + xoff, 32);
             heart.setScale(1.5f, 1.5f); // (128 / 4) = 32
-            renderWindow->draw(heart);
+            renderTexture.draw(heart);
         }
     }
 
@@ -160,7 +160,7 @@ void draw_hud() {
     key_label.setPosition(40 + xoff, 8);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     if (game->get_game_state() != GameManager::NORMAL_PLAY) key_label.setColor(sf::Color(128, 128, 128, 255));
-    renderWindow->draw(key_label);
+    renderTexture.draw(key_label);
 
     if (!ark->exists) {
         return;
@@ -177,44 +177,44 @@ void draw_hud() {
     ark_text.setPosition(400 + xoff, 32);
     ark_text.setFillColor(sf::Color(255, 255, 255, 255));
     ark_text.setFont(font);
-    renderWindow->draw(ark_text);
+    renderTexture.draw(ark_text);
 
     sf::Sprite ark_sprite;
     ark_sprite.setTexture(textures.at(T_PIG));
     ark_sprite.setPosition(400 + xoff, 64);
     ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(ark_sprite);
+    renderTexture.draw(ark_sprite);
     sprintf(tmp, "%.1d/2", ark->pigs);
     ark_text.setString(tmp);
     ark_text.setPosition(424 + xoff, 64);
-    renderWindow->draw(ark_text);
+    renderTexture.draw(ark_text);
 
     ark_sprite.setTexture(textures.at(T_COW));
     ark_sprite.setPosition(464 + xoff, 64);
     ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(ark_sprite);
+    renderTexture.draw(ark_sprite);
     sprintf(tmp, "%.1d/2", ark->cows);
     ark_text.setString(tmp);
     ark_text.setPosition(488 + xoff, 64);
-    renderWindow->draw(ark_text);
+    renderTexture.draw(ark_text);
 
     ark_sprite.setTexture(textures.at(T_SHEEP));
     ark_sprite.setPosition(528 + xoff, 64);
     ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(ark_sprite);
+    renderTexture.draw(ark_sprite);
     sprintf(tmp, "%.1d/2", ark->sheep);
     ark_text.setString(tmp);
     ark_text.setPosition(552 + xoff, 64);
-    renderWindow->draw(ark_text);
+    renderTexture.draw(ark_text);
 
     ark_sprite.setTexture(textures.at(T_CHICKEN));
     ark_sprite.setPosition(528 + xoff, 32);
     ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(ark_sprite);
+    renderTexture.draw(ark_sprite);
     sprintf(tmp, "%.1d/2", ark->chickens);
     ark_text.setString(tmp);
     ark_text.setPosition(552 + xoff, 32);
-    renderWindow->draw(ark_text);
+    renderTexture.draw(ark_text);
 }
 
 /*
@@ -279,10 +279,10 @@ void draw_main_menu() {
 
     if (current_menu_sel == 1) {
         text.setString("> LOAD GAME");
-        text.setFillColor(sf::Color(0, 255, 0));
+        text.setFillColor(sf::Color(255, 255, 255));
     } else {
         text.setString("LOAD GAME");
-        text.setFillColor(sf::Color(0, 128, 0));
+        text.setFillColor(sf::Color(128, 128, 128));
     }
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, height_ref - 16);
@@ -309,10 +309,6 @@ void draw_main_menu() {
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, height_ref + 48);
     renderTexture.draw(text);
-
-    for (int i = 0; i < textures.size(); i++) {
-        jumpwr_xyt(i % 32, i / 32, i);
-    }
 }
 
 void draw_credits() {
@@ -556,7 +552,7 @@ void draw_pause_menu() {
     background.setFillColor(sf::Color(0, 0, 0, 255));
     background.setOutlineColor(sf::Color(255, 255, 255, 255));
     background.setOutlineThickness(3);
-    renderWindow->draw(background);
+    renderTexture.draw(background);
 
     sf::Text label;
     label.setString("PAUSED");
@@ -564,46 +560,46 @@ void draw_pause_menu() {
     label.setPosition(213 + 75, 160+20);
     label.setFillColor(sf::Color(255, 255, 255, 255));
     label.setFont(font);
-    renderWindow->draw(label);
+    renderTexture.draw(label);
 
     label.setString("SAVE");
     label.setCharacterSize(14);
     label.setPosition(213 + 32, 160+52);
     label.setFillColor(sf::Color(255, 255, 255, 255));
     label.setFont(font);
-    renderWindow->draw(label);
+    renderTexture.draw(label);
 
     label.setString("QUIT TO MENU");
     label.setCharacterSize(14);
     label.setPosition(213 + 32, 160+84);
     label.setFillColor(sf::Color(255, 255, 255, 255));
     label.setFont(font);
-    renderWindow->draw(label);
+    renderTexture.draw(label);
 
     label.setString("RESUME");
     label.setCharacterSize(14);
     label.setPosition(213 + 32, 160+116);
     label.setFillColor(sf::Color(255, 255, 255, 255));
     label.setFont(font);
-    renderWindow->draw(label);
+    renderTexture.draw(label);
 
     sf::Sprite key_label;
     key_label.setTexture(textures.at(T_KEY_A));
     key_label.setPosition(213 + 10, 160+116);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(key_label);
+    renderTexture.draw(key_label);
 
     //sf::Sprite key_label;
     key_label.setTexture(textures.at(T_KEY_Z));
     key_label.setPosition(213 + 10, 160+52);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(key_label);
+    renderTexture.draw(key_label);
 
     //sf::Sprite key_label;
     key_label.setTexture(textures.at(T_KEY_X));
     key_label.setPosition(213 + 10, 160+84);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(key_label);
+    renderTexture.draw(key_label);
 }
 
 /*
@@ -631,7 +627,7 @@ void draw_save_notif() {
     background.setFillColor(sf::Color(0, 0, 0, 255));
     background.setOutlineColor(sf::Color(255, 255, 255, 255));
     background.setOutlineThickness(3);
-    renderWindow->draw(background);
+    renderTexture.draw(background);
 
     sf::Text notif;
     notif.setString("Game saving is un-implemented. Your game has NOT been \nsaved.");
@@ -639,17 +635,17 @@ void draw_save_notif() {
     notif.setFillColor(sf::Color(255, 255, 255, 255));
     notif.setFont(font);
     notif.setCharacterSize(14);
-    renderWindow->draw(notif);
+    renderTexture.draw(notif);
 
     sf::Sprite key_skip_label;
     key_skip_label.setTexture(textures.at(T_KEY_X));
     key_skip_label.setPosition(468, 428);
     key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(key_skip_label);
+    renderTexture.draw(key_skip_label);
 
     notif.setString("CONTINUE");
     notif.setPosition(468+24, 428);
-    renderWindow->draw(notif);
+    renderTexture.draw(notif);
 }
 
 void draw_quit_confirm() {
@@ -659,7 +655,7 @@ void draw_quit_confirm() {
     background.setFillColor(sf::Color(0, 0, 0, 255));
     background.setOutlineColor(sf::Color(255, 255, 255, 255));
     background.setOutlineThickness(3);
-    renderWindow->draw(background);
+    renderTexture.draw(background);
 
     sf::Text notif;
     notif.setString("This will quit without saving. Make sure you have \nsaved the game before continuing. OK to quit?");
@@ -667,25 +663,25 @@ void draw_quit_confirm() {
     notif.setFillColor(sf::Color(255, 255, 255, 255));
     notif.setFont(font);
     notif.setCharacterSize(14);
-    renderWindow->draw(notif);
+    renderTexture.draw(notif);
 
     sf::Sprite key_skip_label;
     key_skip_label.setTexture(textures.at(T_KEY_X));
     key_skip_label.setPosition(468+32, 428);
     key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(key_skip_label);
+    renderTexture.draw(key_skip_label);
 
     notif.setString("QUIT");
     notif.setPosition(468+24+32, 428);
-    renderWindow->draw(notif);
+    renderTexture.draw(notif);
 
     key_skip_label.setTexture(textures.at(T_KEY_Z));
     key_skip_label.setPosition(468+32-96, 428);
-    renderWindow->draw(key_skip_label);
+    renderTexture.draw(key_skip_label);
 
     notif.setString("CANCEL");
     notif.setPosition(468+24+32-96, 428);
-    renderWindow->draw(notif);
+    renderTexture.draw(notif);
 }
 
 /*
@@ -710,8 +706,8 @@ void draw_dialogue() {
     nameplate.setPosition(64, 480-9*16 - 8);
     nameplate.setSize(sf::Vector2f(fr.width, fr.height + 8));
     nameplate.setFillColor(sf::Color(0, 0, 0));
-    renderWindow->draw(nameplate);
-    renderWindow->draw(name);
+    renderTexture.draw(nameplate);
+    renderTexture.draw(name);
 
     sf::RectangleShape background;
     background.setPosition(64, 480-8*16);
@@ -719,7 +715,7 @@ void draw_dialogue() {
     background.setFillColor(sf::Color(0, 0, 0, 255));
     background.setOutlineColor(sf::Color(255, 255, 255, 255));
     background.setOutlineThickness(3);
-    renderWindow->draw(background);
+    renderTexture.draw(background);
 
     sf::Text skip_label;
     skip_label.setString("SKIP");
@@ -727,28 +723,28 @@ void draw_dialogue() {
     skip_label.setCharacterSize(14);
     skip_label.setFillColor(sf::Color(255, 255, 255));
     skip_label.setFont(font);
-    renderWindow->draw(skip_label);
+    renderTexture.draw(skip_label);
 
     sf::Sprite key_next_label;
     key_next_label.setTexture(textures.at(T_KEY_Z));
     key_next_label.setPosition(512, 428);
     key_next_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(key_next_label);
+    renderTexture.draw(key_next_label);
 
     skip_label.setString("CONTINUE");
     skip_label.setPosition(420, 428);
-    renderWindow->draw(skip_label);
+    renderTexture.draw(skip_label);
 
     sf::Sprite key_skip_label;
     key_skip_label.setTexture(textures.at(T_KEY_X));
     key_skip_label.setPosition(398, 428);
     key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    renderWindow->draw(key_skip_label);
+    renderTexture.draw(key_skip_label);
 
     sf::Text t = active_dialogue->text[dialogue_state];
     t.setPosition(64+8,480-(8*16)+8);
     t.setFillColor(sf::Color(255, 255, 255, 255));
-    renderWindow->draw(t);
+    renderTexture.draw(t);
 }
 
 /*
@@ -809,7 +805,7 @@ bool jumpwr_xyt(int x, int y, int t) { // tile coords
     // TODO: make the sprites persistent
     sf::Sprite sprite1;
     sprite1.setTexture(textures.at(t));
-    sprite1.setPosition(x * TILE_WIDTH, y * TILE_WIDTH);
+    sprite1.setPosition((x * TILE_WIDTH) - 320, (y * TILE_WIDTH) - 240);
     sprite1.setScale(TEX_SCALE, TEX_SCALE); // (128 / 4) = 32
 
     renderTexture.draw(sprite1);
@@ -819,7 +815,7 @@ bool draw_text(int x, int y, std::string text) {
     sf::Text text1;
     text1.setString(text);
     text1.setCharacterSize(TILE_WIDTH - 2);
-    text1.setPosition(x, y);
+    text1.setPosition(x - 320, y - 240);
     text1.setFillColor(sf::Color(255, 255, 255));
     text1.setFont(font);
 
@@ -830,7 +826,7 @@ bool jumptex_xyt(int x, int y, std::string text) {
     sf::Text text1;
     text1.setString(text);
     text1.setCharacterSize(TILE_WIDTH - 2);
-    text1.setPosition( (x * TILE_WIDTH) + 3, (y * TILE_WIDTH) );
+    text1.setPosition( (x * TILE_WIDTH) + 3 - 320, (y * TILE_WIDTH) - 240);
     text1.setFillColor(sf::Color(255, 255, 255));
     text1.setFont(font);
 
@@ -841,7 +837,7 @@ bool jumptex_xyt(int x, int y, std::string text, sf::Color c) {
     sf::Text text1;
     text1.setString(text);
     text1.setCharacterSize(TILE_WIDTH - 2);
-    text1.setPosition( (x * TILE_WIDTH) + 3, (y * TILE_WIDTH));
+    text1.setPosition( (x * TILE_WIDTH) - 320, (y * TILE_WIDTH) - 240);
     text1.setFillColor(c);
     text1.setFont(font);
 

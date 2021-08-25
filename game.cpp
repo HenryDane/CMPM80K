@@ -2,6 +2,28 @@
 #include "util.h"
 #include <iostream>
 
+Dialogue* ark_first;
+Dialogue* ark_ready;
+bool has_ark_first;
+bool has_ark_second;
+
+void init_game() {
+    ark_first = new Dialogue(-1, -1, "Ark");
+    ark_first->add_text("This is the ark. When you collide with it while you have more than zero planks, it gets stronger.");
+    ark_first->add_text("The number of planks it has is shown as its HP in the top right.");
+    ark_first->add_text("The ark needs to have at least 15HP before you can give it animals.");
+    ark_ready = new Dialogue(-1, -1, "Ark");
+    ark_ready->add_text("The ark is now sturdy enough to host animals.");
+    ark_ready->add_text("Remember, you need two of each kind.");
+    has_ark_first = false;
+    has_ark_second = false;
+}
+
+void exit_game() {
+    delete ark_first;
+    delete ark_ready;
+}
+
 void handle_collide_wall(int dx, int dy) {
     int nx = player->get_x() + dx;
     int ny = player->get_y() + dy;
@@ -144,6 +166,22 @@ bool handle_entity_collision(Entity* e) {
         if (player->get_planks_count() > 0) {
             ark.planks_count += player->get_planks_count();
             player->set_planks_count(0);
+        }
+
+        if (!has_ark_first) {
+            has_ark_first = true;
+            active_dialogue = ark_first;
+            dialogue_state = 0;
+            game->alter_game_state(GameManager::DIALOGUE);
+            return true;
+        }
+
+        if (!has_ark_second && ark.planks_count >= 15) {
+            has_ark_first = true;
+            active_dialogue = ark_ready;
+            dialogue_state = 0;
+            game->alter_game_state(GameManager::DIALOGUE);
+            return true;
         }
 
         if (ark.planks_count < 15) {

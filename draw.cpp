@@ -45,6 +45,18 @@ void draw_entities() {
     std::vector<Entity*>* entities = current_map->_get_m_entities();
     for (Entity* e : (*entities)) {
         if (e->get_type() < 0) continue;
+        if (e->get_type() == E_ARK) {
+            if (ark.planks_count < 4) {
+                jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, T_ARK0);
+            } else if (ark.planks_count < 8) {
+                jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, T_ARK1);
+            } else if (ark.planks_count < 15) {
+                jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, T_ARK2);
+            } else {
+                jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, T_ARK3);
+            }
+            continue;
+        }
         jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, e->get_texture());
         if (e->get_type() == 30 && e->get_state() == 0) {
             jumpwr_xyt(e->get_x() + dx, e->get_y() + dy - 1, T_TREE_TOP);

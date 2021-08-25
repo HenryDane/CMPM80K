@@ -43,6 +43,10 @@
 #define T_COW      41
 #define T_SHEEP    43
 #define T_CHICKEN  65
+#define T_ARK0     96
+#define T_ARK1     36
+#define T_ARK2     44
+#define T_ARK3     46
 
 struct ark_t {
     int planks_count;

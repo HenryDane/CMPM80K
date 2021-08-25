@@ -47,11 +47,11 @@ int main() {
 
     // initalize everything
     init_draw();
+    init_game();
     input_timer.restart();
     player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
     game = new GameManager(); // this *should* alter the value of current_map
-//    ark = {0, 0, 0, 0, -1, -1, false};
-    ark = {6, 2, 1, 0, 1, -1, -1, false, false};
+    ark = {0, 0, 0, 0, 0, -1, -1, false, false};
     active_dialogue = nullptr;
     game->alter_game_state(GameManager::MAIN_MENU);
 
@@ -136,7 +136,9 @@ int main() {
 
         if (game->get_game_state() == GameManager::NORMAL_PLAY ||
             game->get_game_state() == GameManager::PAUSED ||
-            game->get_game_state() == GameManager::DIALOGUE) {
+            game->get_game_state() == GameManager::DIALOGUE ||
+            game->get_game_state() == GameManager::CONFIRM_QUIT ||
+            game->get_game_state() == GameManager::CONFIRM_SAVE) {
             draw_hud();
         }
         if (game->get_game_state() == GameManager::PAUSED ||
@@ -155,6 +157,7 @@ int main() {
         window.display();
     }
 
+    exit_game();
     game->await_shutdown();
 
     return 0;
@@ -174,9 +177,6 @@ void poll_input_direct() {
     }
 
     switch(game->get_game_state()) {
-//    case 1:
-//        // do nothing
-//        break;
     case GameManager::MAIN_MENU:
         state = process_key_menu();
         break;

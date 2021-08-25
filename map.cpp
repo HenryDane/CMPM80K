@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <cstring>
 
 Map::Map() {
     width = 64;
@@ -17,7 +18,7 @@ Map::Map() {
     }
 }
 
-Map::Map(std::string path) {
+Map::Map(std::string& path) {
     // first, lock this
     std::scoped_lock<std::mutex> lock(mutex);
 
@@ -25,6 +26,7 @@ Map::Map(std::string path) {
     std::ifstream mapfile(path);
     if (!mapfile.is_open()) {
         std::cout << "ERROR: unable to open map file: " << path << std::endl;
+        std::cerr << "Error: " << std::strerror(errno);
         exit(1031);
     }
 
@@ -175,15 +177,15 @@ Map::Map(std::string path) {
                 e->set_state(9);
                 entities.push_back(e);
             }else if (type == 64) {
-                if (ark.on_map) {
+                if (ark->on_map) {
                     // there can only BE ONE!!!
                     continue;
                 }
                 // ark
                 Entity* e = new Entity(g_next_uuid++, x, y, 21, type);
-                ark.x = x;
-                ark.y = y;
-                ark.on_map = true;
+                ark->x = x;
+                ark->y = y;
+                ark->on_map = true;
                 entities.push_back(e);
             } else if (type == 52) {
                 // heart
@@ -326,7 +328,7 @@ bool Map::is_collideable(uint32_t x, uint32_t y, bool is_player, bool _lock) {
             if (is_player) {
                 game->mark_portal(p);
                 if (p->tutorial_end) {
-                    ark.exists = true;
+                    ark->exists = true;
                 }
                 if (_lock) {
                     mutex.unlock();

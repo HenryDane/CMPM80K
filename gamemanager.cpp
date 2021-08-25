@@ -4,6 +4,11 @@
 #include <iostream>
 #include <fstream>
 
+#ifdef __linux__
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+
 GameManager::GameManager() {
     current_map = nullptr;
 
@@ -26,11 +31,16 @@ GameManager::GameManager() {
 
         if (tokens[0] == "START_MAP") {
             start_map = tokens[1];
+            start_map.erase(std::remove(start_map.begin(), start_map.end(), (char) 0xD), start_map.end());
         } else if (tokens[0] == "MAPS_LIST") {
             std::vector<std::string> maps = split_by_char(tokens[1], ',');
             for (std::string& s : maps) {
+                // fucking cross platform hell
+                s.erase(std::remove(s.begin(), s.end(), (char) 0xD), s.end());
 
-                Map* m = new Map("asset/" + s);
+                std::string path = "asset/";
+                path += s;
+                Map* m = new Map(path);
                 if (s == start_map) {
                     current_map = m;
                 }
@@ -83,7 +93,7 @@ bool GameManager::timer_tick() {
             }
             if (is_timer_running) {
                 should_tick = true;
-                if (ark.exists) {
+                if (ark->exists) {
                     turns_remaining--;
                 }
             }

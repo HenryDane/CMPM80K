@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdint.h>
 #include "map.h"
+#include "ark.h"
 #include "player.h"
 #include "gamemanager.h"
 
@@ -48,18 +49,6 @@
 #define T_ARK2     44
 #define T_ARK3     46
 
-struct ark_t {
-    int planks_count;
-    int chickens;
-    int cows;
-    int sheep;
-    int pigs;
-
-    int x, y;
-    bool on_map;
-    bool exists;
-};
-
 extern sf::RenderTexture renderTexture;
 extern sf::RenderWindow* renderWindow;
 
@@ -67,7 +56,7 @@ extern uint32_t g_next_uuid;
 
 extern Map* current_map;
 extern Player* player;
-extern ark_t ark;
+extern Ark* ark;
 extern GameManager* game;
 extern Dialogue* active_dialogue;
 extern int dialogue_state;

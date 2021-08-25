@@ -49,7 +49,7 @@ private:
 public:
     Map();
     Map(std::string path, std::string entity_path, uint32_t width, uint32_t height);
-    Map(std::string path);
+    Map(std::string& path);
     ~Map();
 
     uint32_t get_width();

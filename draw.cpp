@@ -46,11 +46,11 @@ void draw_entities() {
     for (Entity* e : (*entities)) {
         if (e->get_type() < 0) continue;
         if (e->get_type() == E_ARK) {
-            if (ark.planks_count < 4) {
+            if (ark->planks_count < 4) {
                 jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, T_ARK0);
-            } else if (ark.planks_count < 8) {
+            } else if (ark->planks_count < 8) {
                 jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, T_ARK1);
-            } else if (ark.planks_count < 15) {
+            } else if (ark->planks_count < 15) {
                 jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, T_ARK2);
             } else {
                 jumpwr_xyt(e->get_x() + dx, e->get_y() + dy, T_ARK3);
@@ -129,7 +129,7 @@ void draw_hud() {
 
     sf::Text timer_text;
     int _tr = game->get_turns_remaining();
-    if (ark.exists) {
+    if (ark->exists) {
         if (_tr > 999) {
             timer_text.setString("TIMER >999");
         } else {
@@ -162,13 +162,13 @@ void draw_hud() {
     if (game->get_game_state() != GameManager::NORMAL_PLAY) key_label.setColor(sf::Color(128, 128, 128, 255));
     renderWindow->draw(key_label);
 
-    if (!ark.exists) {
+    if (!ark->exists) {
         return;
     }
 
     sf::Text ark_text;
-    if (ark.planks_count <= 99) {
-        sprintf(tmp, "ARK HP:%.2d", ark.planks_count);
+    if (ark->planks_count <= 99) {
+        sprintf(tmp, "ARK HP:%.2d", ark->planks_count);
         ark_text.setString(tmp);
     } else {
         ark_text.setString("ARK HP:++");
@@ -184,7 +184,7 @@ void draw_hud() {
     ark_sprite.setPosition(400 + xoff, 64);
     ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderWindow->draw(ark_sprite);
-    sprintf(tmp, "%.1d/2", ark.pigs);
+    sprintf(tmp, "%.1d/2", ark->pigs);
     ark_text.setString(tmp);
     ark_text.setPosition(424 + xoff, 64);
     renderWindow->draw(ark_text);
@@ -193,7 +193,7 @@ void draw_hud() {
     ark_sprite.setPosition(464 + xoff, 64);
     ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderWindow->draw(ark_sprite);
-    sprintf(tmp, "%.1d/2", ark.cows);
+    sprintf(tmp, "%.1d/2", ark->cows);
     ark_text.setString(tmp);
     ark_text.setPosition(488 + xoff, 64);
     renderWindow->draw(ark_text);
@@ -202,7 +202,7 @@ void draw_hud() {
     ark_sprite.setPosition(528 + xoff, 64);
     ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderWindow->draw(ark_sprite);
-    sprintf(tmp, "%.1d/2", ark.sheep);
+    sprintf(tmp, "%.1d/2", ark->sheep);
     ark_text.setString(tmp);
     ark_text.setPosition(552 + xoff, 64);
     renderWindow->draw(ark_text);
@@ -211,7 +211,7 @@ void draw_hud() {
     ark_sprite.setPosition(528 + xoff, 32);
     ark_sprite.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderWindow->draw(ark_sprite);
-    sprintf(tmp, "%.1d/2", ark.chickens);
+    sprintf(tmp, "%.1d/2", ark->chickens);
     ark_text.setString(tmp);
     ark_text.setPosition(552 + xoff, 32);
     renderWindow->draw(ark_text);

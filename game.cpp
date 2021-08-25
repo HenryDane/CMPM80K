@@ -27,13 +27,13 @@ void exit_game() {
 void game_check_win_loose() {
     if (player->get_hearts() <= 0 ||
         game->get_turns_remaining() <= 0 ||
-        ark.planks_count < 0) {
+        ark->planks_count < 0) {
         // LOSS
         game->alter_game_state(GameManager::LOOSE_CUTSCENE);
     }
 
-    if (ark.planks_count >= 15 && ark.cows > 1 && ark.chickens > 1 &&
-        ark.pigs > 1 && ark.sheep > 1) {
+    if (ark->planks_count >= 15 && ark->cows > 1 && ark->chickens > 1 &&
+        ark->pigs > 1 && ark->sheep > 1) {
         // WIN
         game->alter_game_state(GameManager::WIN_CUTSCENE);
     }
@@ -179,7 +179,7 @@ bool handle_entity_collision(Entity* e) {
     } else if (e->get_type() == 21) {
         // collided with the ark
         if (player->get_planks_count() > 0) {
-            ark.planks_count += player->get_planks_count();
+            ark->planks_count += player->get_planks_count();
             player->set_planks_count(0);
         }
 
@@ -191,7 +191,7 @@ bool handle_entity_collision(Entity* e) {
             return true;
         }
 
-        if (!has_ark_second && ark.planks_count >= 15) {
+        if (!has_ark_second && ark->planks_count >= 15) {
             has_ark_second = true;
             active_dialogue = ark_ready;
             dialogue_state = 0;
@@ -199,7 +199,7 @@ bool handle_entity_collision(Entity* e) {
             return true;
         }
 
-        if (ark.planks_count < 15) {
+        if (ark->planks_count < 15) {
             // must have minimum plank count
             return true;
         }
@@ -208,19 +208,19 @@ bool handle_entity_collision(Entity* e) {
             player->get_held_item_texture() <= 43) ||
             player->get_held_item_texture() == T_CHICKEN) {
             // player is holding animal
-            int type = player->get_held_item_texture() - 29;
+            int type = get_entity_type_from_texture(player->get_held_item_texture());
             if (type == 12) {
                 // its a cow
-                ark.cows++;
+                ark->cows++;
             } else if (type == 13) {
                 // its a pig
-                ark.pigs++;
+                ark->pigs++;
             } else if (type == 14) {
                 // its a sheep
-                ark.sheep++;
+                ark->sheep++;
             } else if (type == E_CHICKEN) {
                 // its a sheep
-                ark.chickens++;
+                ark->chickens++;
             }
 
             player->set_held_item_texture(T_EMPTY);

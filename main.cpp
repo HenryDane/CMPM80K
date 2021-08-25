@@ -18,7 +18,7 @@ int current_menu_sel = 0;
 
 Player* player;
 Map* current_map;
-ark_t ark; // TODO make this a class
+Ark* ark; // TODO make this a class
 GameManager* game;
 Dialogue* active_dialogue;
 int dialogue_state = -1; // <0 -> inactive, >=0 -> active
@@ -48,10 +48,10 @@ int main() {
     // initalize everything
     init_draw();
     init_game();
+    ark = new Ark(-1, -1);
     input_timer.restart();
     player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
     game = new GameManager(); // this *should* alter the value of current_map
-    ark = {0, 0, 0, 0, 0, -1, -1, false, false};
     active_dialogue = nullptr;
     game->alter_game_state(GameManager::MAIN_MENU);
 

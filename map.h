@@ -10,15 +10,28 @@
 
 class Portal {
 public:
-    int x, y;
+    int x, y, tx, ty;
     std::string name;
-    bool tutorial_end;
+    bool tutorial_end, is_door;
 
     Portal(int x, int y, std::string name, bool tutorial_end) {
         this->x = x;
         this->y = y;
         this->name = name;
         this->tutorial_end = tutorial_end;
+        this->tx = -1;
+        this->ty = -1;
+        this->is_door = false;
+    }
+
+    Portal(int x, int y, std::string name, int tx, int ty) {
+        this->x = x;
+        this->y = y;
+        this->name = name;
+        this->tutorial_end = false;
+        this->tx = tx;
+        this->ty = ty;
+        this->is_door = true;
     }
 };
 
@@ -63,6 +76,7 @@ public:
     bool is_collideable(uint32_t w, uint32_t h, bool is_player, bool _lock = true);
     int get_interaction(uint32_t w, uint32_t h);
     Entity* check_entity_collision(int nx, int ny, bool _lock = true);
+    void tick_water();
 
     std::vector<Entity*>* _get_m_entities();
     void acquire();

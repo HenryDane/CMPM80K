@@ -66,7 +66,17 @@ void draw_entities() {
 }
 
 void draw_player() {
-    jumpwr_xyt(20, 15, T_PLAYER);
+    if (player->get_off_item_texture() == T_AXE) {
+        jumpwr_xyt(20, 15, T_PLAYERA);
+    } else if (player->get_off_item_texture() == T_SWORD0) {
+        jumpwr_xyt(20, 15, T_PLAYER0);
+    } else if (player->get_off_item_texture() == T_SWORD1) {
+        jumpwr_xyt(20, 15, T_PLAYER1);
+    } else if (player->get_off_item_texture() == T_SWORD2) {
+        jumpwr_xyt(20, 15, T_PLAYER2);
+    } else {
+        jumpwr_xyt(20, 15, T_PLAYER);
+    }
 }
 
 void draw_hud() {
@@ -341,43 +351,43 @@ void draw_credits() {
     |       ACTUALLY DISPLAY THE CREDITS        |
     =============================================
     */
-    text.setString("PROGRAMMING, ENGINE, CONCEPT");
+    text.setString("PROGRAMMING, ENGINE, MAPS, CONCEPT");
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, 10);
     text.setFillColor(sf::Color(128, 128, 128, 255));
     renderTexture.draw(text);
 
-    text.setString("HENRY OLLING");
+    text.setString("Henry Olling");
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, 26);
     text.setFillColor(sf::Color(255, 255, 255));
     renderTexture.draw(text);
 
-    text.setString("ASSETS, CONCEPT");
+    text.setString("VISUAL ASSETS, CONCEPT");
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, 58);
     text.setFillColor(sf::Color(128, 128, 128, 255));
     renderTexture.draw(text);
 
-    text.setString("JOCQUE JEFFERSON");
+    text.setString("Jocque Jefferson");
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, 74);
     text.setFillColor(sf::Color(255, 255, 255));
     renderTexture.draw(text);
 
-    text.setString("ASSETS");
+    text.setString("VISUAL ASSETS");
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, 106);
     text.setFillColor(sf::Color(128, 128, 128, 255));
     renderTexture.draw(text);
 
-    text.setString("@capiwak");
+    text.setString("IG: @capiwak");
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, 122);
     text.setFillColor(sf::Color(255, 255, 255));
     renderTexture.draw(text);
 
-    text.setString("ASSETS");
+    text.setString("VISUAL ASSETS");
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, 154);
     text.setFillColor(sf::Color(128, 128, 128, 255));
@@ -386,6 +396,48 @@ void draw_credits() {
     text.setString("opengameart.org");
     fr = text.getLocalBounds();
     text.setPosition(640 - fr.width - 10, 170);
+    text.setFillColor(sf::Color(255, 255, 255));
+    renderTexture.draw(text);
+
+    text.setString("AUDIO ASSETS");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 202);
+    text.setFillColor(sf::Color(128, 128, 128, 255));
+    renderTexture.draw(text);
+
+    text.setString("freesound.org");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 218);
+    text.setFillColor(sf::Color(255, 255, 255));
+    renderTexture.draw(text);
+
+    text.setString("AUDIO ASSETS");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 250);
+    text.setFillColor(sf::Color(128, 128, 128, 255));
+    renderTexture.draw(text);
+
+    text.setString("InspectorJ");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 266);
+    text.setFillColor(sf::Color(255, 255, 255));
+    renderTexture.draw(text);
+
+    text.setString("www.jshaw.co.uk");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 282);
+    text.setFillColor(sf::Color(255, 255, 255));
+    renderTexture.draw(text);
+
+    text.setString("MAPS");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 314);
+    text.setFillColor(sf::Color(128, 128, 128, 255));
+    renderTexture.draw(text);
+
+    text.setString("Green");
+    fr = text.getLocalBounds();
+    text.setPosition(640 - fr.width - 10, 330);
     text.setFillColor(sf::Color(255, 255, 255));
     renderTexture.draw(text);
 }
@@ -771,6 +823,7 @@ bool init_draw(void){
     }
 
     // apply transparency adjust
+#ifdef CHECK_TEXTURES_BY_PIXEL
     for (unsigned int y = 0; y < tilemapsize.y; y++) {
         for (unsigned int x = 0; x < tilemapsize.x; x++) {
             if (tilemap.getPixel(x, y) == sf::Color(255, 255, 255)) {
@@ -778,6 +831,7 @@ bool init_draw(void){
             }
         }
     }
+#endif
 
     // create textures from the result
     for (unsigned int y = 0; y < tilemapsize.y / 16; y++) {

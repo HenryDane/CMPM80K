@@ -90,5 +90,10 @@ for o in j['layers'][object_idx]['objects']:
 		for p in o['properties']:
 			odict[p['name']] = p['value']
 		r.write(o['type']+str(';')+str(o['x'])+','+str(o['y'])+','+o['name']+','+odict['Count']+','+odict['Dialogue']+'\n')
+	elif (o['type'] == 'DOOR'):
+		odict = {}
+		for p in o['properties']:
+			odict[p['name']] = p['value']
+		r.write(o['type']+str(';')+str(o['x'])+','+str(o['y'])+','+o['name']+','+odict['targetx']+','+odict['targety']+'\n')
 # close
 r.close()

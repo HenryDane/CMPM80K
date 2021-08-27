@@ -1,5 +1,6 @@
 #include "game.h"
 #include "util.h"
+#include "audio.h"
 #include <iostream>
 
 Dialogue* ark_first;
@@ -29,12 +30,14 @@ void game_check_win_loose() {
         game->get_turns_remaining() <= 0 ||
         ark->planks_count < 0) {
         // LOSS
+        trigger_sound(SAMPLETYPE::LOSE);
         game->alter_game_state(GameManager::LOOSE_CUTSCENE);
     }
 
     if (ark->planks_count >= 15 && ark->cows > 1 && ark->chickens > 1 &&
         ark->pigs > 1 && ark->sheep > 1) {
         // WIN
+        trigger_sound(SAMPLETYPE::WIN);
         game->alter_game_state(GameManager::WIN_CUTSCENE);
     }
 }
@@ -44,11 +47,13 @@ void handle_collide_wall(int dx, int dy) {
     int ny = player->get_y() + dy;
 
     int tile = current_map->get_tile_at(nx, ny);
-    if ((tile == T_EMPTY) ||
-        ((tile % 11 < 5) && (tile < 27))) {
+//    if ((tile == T_EMPTY) ||
+//        ((tile % 11 < 5) && (tile < 27))) {
+    if (current_map->is_collideable(nx, ny, true, true)) {
         if (player->get_held_item_texture() == T_PLANK) {
             current_map->set_tile_at(nx, ny, T_PLANKS);
             player->set_held_item_texture(T_EMPTY);
+            trigger_sound(SAMPLETYPE::WOOD_COLLECT);
         }
     }
 }
@@ -80,6 +85,15 @@ void do_drop_item() {
                            get_entity_type_from_texture(player->get_held_item_texture()),
                            player->get_held_item_texture());
     current_map->register_entity(e);
+    if (e->get_type() == E_PIG) {
+        trigger_sound(SAMPLETYPE::PIG_PASSIVE);
+    } else if (e->get_type() == E_COW) {
+        trigger_sound(SAMPLETYPE::COW_PASSIVE);
+    } else if (e->get_type() == E_SHEEP) {
+        trigger_sound(SAMPLETYPE::SHEEP_PASSIVE);
+    } else if (e->get_type() == E_CHICKEN) {
+        trigger_sound(SAMPLETYPE::CHICKEN_PASSIVE);
+    }
 
     player->set_held_item_texture(T_EMPTY);
 }
@@ -96,6 +110,17 @@ void do_pickup_item() {
     if (entity_n != nullptr) {
         if (is_entity_pickupable(entity_n->get_type())) {
             player->set_held_item_texture(entity_n->get_texture());
+            if (entity_n->get_type() == E_PLANKS) {
+                trigger_sound(SAMPLETYPE::WOOD_COLLECT);
+            } else if (entity_n->get_type() == E_PIG) {
+                trigger_sound(SAMPLETYPE::PIG_COLLECT);
+            } else if (entity_n->get_type() == E_COW) {
+                trigger_sound(SAMPLETYPE::COW_COLLECT);
+            } else if (entity_n->get_type() == E_SHEEP) {
+                trigger_sound(SAMPLETYPE::SHEEP_COLLECT);
+            } else if (entity_n->get_type() == E_CHICKEN) {
+                trigger_sound(SAMPLETYPE::CHICKEN_COLLECT);
+            }
             entity_n->set_type(-1);
             return;
         }
@@ -103,6 +128,17 @@ void do_pickup_item() {
     if (entity_s != nullptr) {
         if (is_entity_pickupable(entity_s->get_type())) {
             player->set_held_item_texture(entity_s->get_texture());
+            if (entity_s->get_type() == E_PLANKS) {
+                trigger_sound(SAMPLETYPE::WOOD_COLLECT);
+            } else if (entity_s->get_type() == E_PIG) {
+                trigger_sound(SAMPLETYPE::PIG_COLLECT);
+            } else if (entity_s->get_type() == E_COW) {
+                trigger_sound(SAMPLETYPE::COW_COLLECT);
+            } else if (entity_s->get_type() == E_SHEEP) {
+                trigger_sound(SAMPLETYPE::SHEEP_COLLECT);
+            } else if (entity_s->get_type() == E_CHICKEN) {
+                trigger_sound(SAMPLETYPE::CHICKEN_COLLECT);
+            }
             entity_s->set_type(-1);
             return;
         }
@@ -110,6 +146,17 @@ void do_pickup_item() {
     if (entity_e != nullptr) {
         if (is_entity_pickupable(entity_e->get_type())) {
             player->set_held_item_texture(entity_e->get_texture());
+            if (entity_e->get_type() == E_PLANKS) {
+                trigger_sound(SAMPLETYPE::WOOD_COLLECT);
+            } else if (entity_e->get_type() == E_PIG) {
+                trigger_sound(SAMPLETYPE::PIG_COLLECT);
+            } else if (entity_e->get_type() == E_COW) {
+                trigger_sound(SAMPLETYPE::COW_COLLECT);
+            } else if (entity_e->get_type() == E_SHEEP) {
+                trigger_sound(SAMPLETYPE::SHEEP_COLLECT);
+            } else if (entity_e->get_type() == E_CHICKEN) {
+                trigger_sound(SAMPLETYPE::CHICKEN_COLLECT);
+            }
             entity_e->set_type(-1);
             return;
         }
@@ -117,6 +164,17 @@ void do_pickup_item() {
     if (entity_w != nullptr) {
         if (is_entity_pickupable(entity_w->get_type())) {
             player->set_held_item_texture(entity_w->get_texture());
+            if (entity_w->get_type() == E_PLANKS) {
+                trigger_sound(SAMPLETYPE::WOOD_COLLECT);
+            } else if (entity_w->get_type() == E_PIG) {
+                trigger_sound(SAMPLETYPE::PIG_COLLECT);
+            } else if (entity_w->get_type() == E_COW) {
+                trigger_sound(SAMPLETYPE::COW_COLLECT);
+            } else if (entity_w->get_type() == E_SHEEP) {
+                trigger_sound(SAMPLETYPE::SHEEP_COLLECT);
+            } else if (entity_w->get_type() == E_CHICKEN) {
+                trigger_sound(SAMPLETYPE::CHICKEN_COLLECT);
+            }
             entity_w->set_type(-1);
             return;
         }
@@ -129,13 +187,16 @@ void do_pickup_item() {
 bool handle_entity_collision(Entity* e) {
     if (e->get_type() == 2) {
         player->set_coin_count(player->get_coin_count() + 1);
+        trigger_sound(SAMPLETYPE::COIN_COLLECT);
         e->set_type(-1);
         return false;
     } else if (e->get_type() == 20) {
+        trigger_sound(SAMPLETYPE::WOOD_COLLECT);
         player->set_planks_count(player->get_planks_count() + 1);
         e->set_type(-1);
         return false;
     } else if (e->get_type() == 1) {
+        trigger_sound(SAMPLETYPE::CHEST_OPEN);
         int n_coins = (rand() % 4) + 1;
         int n_hearts = rand() % 2;
         e->set_type(-1);
@@ -149,6 +210,7 @@ bool handle_entity_collision(Entity* e) {
             current_map->register_entity(h, false);
         }
     } else if (e->get_type() == 3) {
+        trigger_sound(SAMPLETYPE::HEART_COLLECT);
         player->set_hearts(player->get_hearts() + 1);
         e->set_type(-1);
         return false;
@@ -158,15 +220,20 @@ bool handle_entity_collision(Entity* e) {
         std::cout << "off item texture: " << player->get_off_item_texture() << std::endl;
         if (player->get_off_item_texture() == T_AXE) {
             e->set_state(e->get_state() - 1);
+            trigger_sound(SAMPLETYPE::ATTACK);
         } else if (player->get_off_item_texture() == T_SWORD0) {
             e->set_state(e->get_state() - 2);
+            trigger_sound(SAMPLETYPE::ATTACK);
         } else if (player->get_off_item_texture() == T_SWORD1) {
             e->set_state(e->get_state() - 3);
+            trigger_sound(SAMPLETYPE::ATTACK);
         } else if (player->get_off_item_texture() == T_SWORD2) {
             e->set_state(e->get_state() - 4);
+            trigger_sound(SAMPLETYPE::ATTACK);
         } else if (player->get_off_item_texture() == T_EMPTY) {
             if (rand() % 100 < 50) {
                 e->set_state(e->get_state() - 1);
+                trigger_sound(SAMPLETYPE::ATTACK);
             }
         }
         std::cout << "hit enemy: " << e->get_state() << std::endl;
@@ -178,6 +245,7 @@ bool handle_entity_collision(Entity* e) {
         }
     } else if (e->get_type() == 21) {
         // collided with the ark
+        trigger_sound(SAMPLETYPE::CHEST_OPEN);
         if (player->get_planks_count() > 0) {
             ark->planks_count += player->get_planks_count();
             player->set_planks_count(0);
@@ -231,15 +299,17 @@ bool handle_entity_collision(Entity* e) {
         // hit a tree
 
         if (player->get_off_item_texture() == T_AXE && e->get_state() <= 0) {
-            e->set_state(5);
+            e->set_state(120); // now takes 120s to regrow trees
             e->set_texture(T_STUMP);
             Entity* p = new Entity(g_next_uuid++, player->get_x(), player->get_y(), E_PLANKS, T_PLANK);
             current_map->register_entity(p, false);
+            trigger_sound(SAMPLETYPE::WOOD_COLLECT);
         }
 
         return true;
     } else if (e->get_type() == E_AXE) {
         // hit axe item
+        trigger_sound(SAMPLETYPE::ITEM_PICKUP);
         if (player->get_off_item_texture() == T_EMPTY) {
             player->set_off_item_texture(T_AXE);
         } else {
@@ -252,6 +322,7 @@ bool handle_entity_collision(Entity* e) {
         e->set_type(-1);
     } else if (e->get_type() == E_SWORD0) {
         // hit sword 0 item
+        trigger_sound(SAMPLETYPE::ITEM_PICKUP);
         if (player->get_off_item_texture() == T_EMPTY) {
             player->set_off_item_texture(T_SWORD0);
         } else {
@@ -264,6 +335,7 @@ bool handle_entity_collision(Entity* e) {
         e->set_type(-1);
     } else if (e->get_type() == E_SWORD1) {
         // hit sword 1 item
+        trigger_sound(SAMPLETYPE::ITEM_PICKUP);
         if (player->get_off_item_texture() == T_EMPTY) {
             player->set_off_item_texture(T_SWORD1);
         } else {
@@ -276,6 +348,7 @@ bool handle_entity_collision(Entity* e) {
         e->set_type(-1);
     } else if (e->get_type() == E_SWORD2) {
         // hit sword 2 item
+        trigger_sound(SAMPLETYPE::ITEM_PICKUP);
         if (player->get_off_item_texture() == T_EMPTY) {
             player->set_off_item_texture(T_SWORD2);
         } else {

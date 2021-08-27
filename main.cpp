@@ -9,6 +9,7 @@
 #include "game.h"
 #include "gamemanager.h"
 #include "util.h"
+#include "audio.h"
 
 // global variables
 sf::RenderTexture renderTexture;
@@ -51,6 +52,7 @@ int main() {
     // initalize everything
     init_draw();
     init_game();
+    init_audio();
     ark = new Ark(-1, -1);
     input_timer.restart();
     player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
@@ -157,6 +159,7 @@ int main() {
     }
 
     exit_game();
+    stop_audio();
     game->await_shutdown();
 
     return 0;
@@ -243,6 +246,7 @@ bool process_key_play() {
 //        pressed = true;
 //    }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+        trigger_sound(SAMPLETYPE::UI_CLICK);
         game->alter_game_state(GameManager::PAUSED);
         pressed = true;
     }
@@ -254,6 +258,7 @@ bool process_key_menu() {
         if (current_menu_sel == 0) {
             // goto normal gameplay
             // TODO -- make sure this initalizes everything
+            trigger_sound(SAMPLETYPE::UI_SELECT);
             std::cout << "update state!" << std::endl;
             reset_game_instance();
             game->alter_game_state(GameManager::OPEN_CUTSCENE);
@@ -262,17 +267,20 @@ bool process_key_menu() {
             // try to save
             // TODO play error noise
         } else if (current_menu_sel == 2) {
-            // TODO show credits
+            trigger_sound(SAMPLETYPE::UI_SELECT);
             game->alter_game_state(GameManager::CREDITS);
         } else if (current_menu_sel == 3) {
+            trigger_sound(SAMPLETYPE::UI_SELECT);
             renderWindow->close();
         }
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
         // down
+        trigger_sound(SAMPLETYPE::UI_CLICK);
         current_menu_sel++;
         current_menu_sel = current_menu_sel % 4;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         // up
+        trigger_sound(SAMPLETYPE::UI_CLICK);
         current_menu_sel--;
         if (current_menu_sel < 0) {
             current_menu_sel = 3;
@@ -288,8 +296,10 @@ bool process_key_special() {
         if (game->get_game_state() == GameManager::OPEN_CUTSCENE) {
             // since were in opening, we go to normal
             game->alter_game_state(GameManager::NORMAL_PLAY);
+            trigger_sound(SAMPLETYPE::UI_CLICK);
             // lock timer mutex and enable it
         } else {
+            trigger_sound(SAMPLETYPE::UI_SELECT);
             game->alter_game_state(GameManager::MAIN_MENU);
         }
     } else {
@@ -301,15 +311,19 @@ bool process_key_special() {
 bool process_key_pause() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         game->alter_game_state(GameManager::NORMAL_PLAY);
+        trigger_sound(SAMPLETYPE::UI_SELECT);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
         // TODO save
         std::cout << "saved" << std::endl;
         game->alter_game_state(GameManager::CONFIRM_SAVE);
+        trigger_sound(SAMPLETYPE::UI_CLICK);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         // quit to menu
         game->alter_game_state(GameManager::CONFIRM_QUIT);
+        trigger_sound(SAMPLETYPE::UI_CLICK);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
         game->alter_game_state(GameManager::NORMAL_PLAY);
+        trigger_sound(SAMPLETYPE::UI_SELECT);
     } else {
         return false;
     }
@@ -320,6 +334,7 @@ bool process_key_credits() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         // quit to menu
         game->alter_game_state(GameManager::MAIN_MENU);
+        trigger_sound(SAMPLETYPE::UI_CLICK);
     } else {
         return false;
     }
@@ -328,6 +343,7 @@ bool process_key_credits() {
 
 bool process_key_dialogue() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+        trigger_sound(SAMPLETYPE::UI_CLICK);
         dialogue_state++;
         if (dialogue_state >= active_dialogue->text.size()) {
             // done
@@ -338,6 +354,7 @@ bool process_key_dialogue() {
             // more to go
         }
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+        trigger_sound(SAMPLETYPE::UI_CLICK);
         active_dialogue = nullptr;
         dialogue_state = -1;
         game->alter_game_state(GameManager::NORMAL_PLAY);
@@ -351,6 +368,7 @@ bool process_key_dialogue() {
 bool process_key_save_notif() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         game->alter_game_state(GameManager::PAUSED);
+        trigger_sound(SAMPLETYPE::UI_CLICK);
     } else {
         return false;
     }
@@ -360,8 +378,10 @@ bool process_key_save_notif() {
 bool process_key_confirm_quit() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         game->alter_game_state(GameManager::MAIN_MENU);
+        trigger_sound(SAMPLETYPE::UI_SELECT);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
         game->alter_game_state(GameManager::PAUSED);
+        trigger_sound(SAMPLETYPE::UI_CLICK);
     } else {
         return false;
     }

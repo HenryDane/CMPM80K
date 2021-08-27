@@ -48,6 +48,10 @@
 #define T_ARK1     36
 #define T_ARK2     44
 #define T_ARK3     46
+#define T_PLAYERA  304
+#define T_PLAYER0  305
+#define T_PLAYER1  306
+#define T_PLAYER2  307
 
 extern sf::RenderTexture renderTexture;
 //extern sf::RenderWindow* renderWindow;

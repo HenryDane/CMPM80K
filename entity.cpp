@@ -1,5 +1,6 @@
 #include "entity.h"
 #include "main.h"
+#include "audio.h"
 #include <iostream>
 #include <cmath>
 
@@ -45,6 +46,7 @@ void Entity::tick_self() {
             (this->type == E_ENEMY0 ||
              this->type == E_ENEMY1 ||
              this->type == E_ENEMY2)) {
+            trigger_sound(SAMPLETYPE::ATTACK);
             if (ark->cows > 0) {
                 ark->cows--;
             } else if (ark->pigs > 0) {
@@ -67,6 +69,7 @@ void Entity::tick_self() {
         if (this->get_type() == E_ENEMY0 ||
             this->get_type() == E_ENEMY1 ||
             this->get_type() == E_ENEMY2) {
+            trigger_sound(SAMPLETYPE::ATTACK);
             player->set_hearts(player->get_hearts() - 1);
             // TODO setup blink
         }

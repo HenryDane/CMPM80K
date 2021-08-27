@@ -60,7 +60,7 @@ Map::Map(std::string& path) {
                 this->height = std::stoi(dimtokens[1]);
                 this->data = new uint16_t[width * height];
                 this->decoration = new uint16_t[width * height];
-                for (int i = 0; i < width*height; decoration[i++] = -1);
+                for (size_t i = 0; i < width*height; decoration[i++] = -1);
                 entity_data = new uint16_t[width * height];
             } else {
                 std::cout << "MALFORMED MAPDIM TOKEN IN FILE: " << path << std::endl;
@@ -119,7 +119,19 @@ Map::Map(std::string& path) {
                 std::cout << "MALFORMED PORTAL TOKEN IN FILE: " << path << std::endl;
                 exit(1033);
             }
-        } else if (tokens[0] == "DIALOGUE") {
+        } else if (tokens[0] == "DOOR") {
+            std::vector<std::string> dimtokens = split_by_char(tokens[1], ',');
+            if (dimtokens.size() == 5) {
+                this->portals.push_back(new Portal(std::stoi(dimtokens[0]) / 16,
+                                                   std::stoi(dimtokens[1]) / 16,
+                                                   dimtokens[2],
+                                                   std::stoi(dimtokens[3]),
+                                                   std::stoi(dimtokens[4])));
+            } else {
+                std::cout << "MALFORMED PORTAL TOKEN IN FILE: " << path << std::endl;
+                exit(1033);
+            }
+        }else if (tokens[0] == "DIALOGUE") {
             std::vector<std::string> dimtokens = split_by_char(tokens[1], ',');
             if (dimtokens.size() >= 4) {
                 int x = std::stoi(dimtokens[0]) / 16;
@@ -226,10 +238,10 @@ Map::~Map() {
     std::scoped_lock<std::mutex> lock(mutex);
     delete[] this->data;
     delete[] this->decoration;
-    for (int i = 0; i < entities.size(); i++) {
+    for (size_t i = 0; i < entities.size(); i++) {
         delete entities[i];
     }
-    for (int i = 0; i < portals.size(); i++) {
+    for (size_t i = 0; i < portals.size(); i++) {
         delete portals[i];
     }
     for (int i = 0; i < dialogue.size(); i++) {
@@ -327,8 +339,11 @@ bool Map::is_collideable(uint32_t x, uint32_t y, bool is_player, bool _lock) {
             // hit a portal
             if (is_player) {
                 game->mark_portal(p);
+                std::cout << "hit portal: " << p << " with door flag: " << p->is_door << std::endl;
                 if (p->tutorial_end) {
                     ark->exists = true;
+                    delete player;
+                    player = new Player(0, 0, 2);
                 }
                 if (_lock) {
                     mutex.unlock();
@@ -367,6 +382,23 @@ bool Map::is_collideable(uint32_t x, uint32_t y, bool is_player, bool _lock) {
         mutex.unlock();
     }
     return false;
+}
+
+void Map::tick_water() {
+    std::scoped_lock<std::mutex> lock(mutex);
+
+    for (size_t i = 0; i < width * height; i++) {
+        if (data[i] == 286) {
+            data[i] = 287;
+        } else if (data[i] == 287) {
+            data[i] = 286;
+        }
+        if (decoration[i] == 137) {
+            decoration[i] = 148;
+        } else if (decoration[i] == 148) {
+            decoration[i] = 137;
+        }
+    }
 }
 
 int Map::get_interaction(uint32_t x, uint32_t y) {

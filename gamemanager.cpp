@@ -107,13 +107,30 @@ bool GameManager::timer_tick() {
                 }
             }
         }
-        if (should_tick && current_map != nullptr) {
-            current_map->acquire();
-            std::vector<Entity*>* entities = current_map->_get_m_entities();
-            for (Entity* e : (*entities)) {
-                e->tick_self();
+        if (current_map != nullptr) {
+            if (should_tick) {
+                current_map->acquire();
+                std::vector<Entity*>* entities = current_map->_get_m_entities();
+                for (Entity* e : (*entities)) {
+                    e->tick_self();
+                }
+                current_map->release();
+
+                // tick trees in unloaded maps
+                for (auto& [name, mapobj] : this->map_table) {
+                    if (mapobj == current_map) {
+                        continue;
+                    }
+                    std::vector<Entity*>* entities = mapobj->_get_m_entities();
+                    for (Entity* e : (*entities)) {
+                        if (e->get_type() != E_TREE) {
+                            continue;
+                        }
+                        e->tick_self();
+                    }
+                }
             }
-            current_map->release();
+            current_map->tick_water();
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1250));
         current_map->clean_entity_list();
@@ -161,7 +178,12 @@ void GameManager::update() {
         }
 
         current_map = map_table[active_portal->name];
-        player->set_x(current_map->get_start_x());
-        player->set_y(current_map->get_start_y());
+        if (active_portal->is_door) {
+            player->set_x(active_portal->tx);
+            player->set_y(active_portal->ty);
+        } else {
+            player->set_x(current_map->get_start_x());
+            player->set_y(current_map->get_start_y());
+        }
     }
 }

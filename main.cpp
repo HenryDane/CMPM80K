@@ -58,8 +58,7 @@ int main() {
     player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
     game = new GameManager(); // this *should* alter the value of current_map
     active_dialogue = nullptr;
-//    game->alter_game_state(GameManager::MAIN_MENU);
-    game->alter_game_state(GameManager::WIN_CUTSCENE);
+    game->alter_game_state(GameManager::MAIN_MENU);
 
     while (window.isOpen()) {
         window.clear();

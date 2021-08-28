@@ -70,6 +70,5 @@ void trigger_sound(SAMPLETYPE sample) {
         return;
     }
 
-    std::cout << "TRIGGERING SOUND: " << (int) sample << std::endl;
     sound_table[sample]->play();
 }

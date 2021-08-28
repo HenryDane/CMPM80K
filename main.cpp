@@ -59,7 +59,7 @@ int main() {
     game = new GameManager(); // this *should* alter the value of current_map
     active_dialogue = nullptr;
 //    game->alter_game_state(GameManager::MAIN_MENU);
-    game->alter_game_state(GameManager::OPEN_CUTSCENE);
+    game->alter_game_state(GameManager::WIN_CUTSCENE);
 
     while (window.isOpen()) {
         window.clear();

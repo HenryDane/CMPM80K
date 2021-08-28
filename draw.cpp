@@ -4,6 +4,9 @@
 #include "main.h"
 
 std::vector<sf::Texture> textures;
+sf::Texture opening;
+sf::Texture losing;
+sf::Texture winning;
 sf::Font font;
 
 /*
@@ -166,7 +169,7 @@ void draw_hud() {
     }
 
     sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_Z));
+    key_label.setTexture(textures.at(T_KEY_J));
     key_label.setPosition(40 + xoff, 8);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     if (game->get_game_state() != GameManager::NORMAL_PLAY) key_label.setColor(sf::Color(128, 128, 128, 255));
@@ -449,20 +452,23 @@ void draw_credits() {
 */
 
 void draw_victory_screen() {
+    sf::Sprite background;
+    background.setTexture(winning);
+    renderTexture.draw(background);
+
     sf::Text title;
-    title.setString("VICTORY CUTSCRENE PLACEHOLDER");
+    title.setString("VICTORY");
     title.setCharacterSize(28);
-    title.setFillColor(sf::Color(255, 255, 255));
+    title.setFillColor(sf::Color(0, 0, 0));
     title.setFont(font);
     sf::FloatRect fr = title.getLocalBounds();
-    title.setPosition((640 - fr.width) / 2, (480 - fr.height) / 2);
+    title.setPosition((640 - fr.width) / 2, 100);
     renderTexture.draw(title);
 
     sf::Sprite key_label;
     key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(10, 480 - 32);
-    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    //key_label.setColor(sf::Color(128, 128, 128, 255));
+    key_label.setScale(1.0f, 1.0f);
     renderTexture.draw(key_label);
 
     sf::Text text;
@@ -471,38 +477,62 @@ void draw_victory_screen() {
     text.setFillColor(sf::Color(255, 255, 255));
     text.setFont(font);
     text.setPosition(10 + 32, 480 - 32);
+    fr = text.getLocalBounds();
+    sf::RectangleShape rect;
+    rect.setPosition(10 + 32, 480 - 32);
+    rect.setSize(sf::Vector2f(fr.width, fr.height + 6));
+    rect.setFillColor(sf::Color(0, 0, 0, 255));
+    renderTexture.draw(rect);
     renderTexture.draw(text);
 
-    text.setString("YOU SAVED THE ANIMALS AND THE WORLD.");
+    text.setString("YOU HAVE SAVED THE ANIMALS AND THE WORLD.");
     fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 300);
+    text.setPosition((640 - fr.width) / 2, 370);
+
+    rect.setPosition((640 - fr.width) / 2, 370);
+    rect.setSize(sf::Vector2f(fr.width, fr.height + 6));
+    renderTexture.draw(rect);
+
     renderTexture.draw(text);
-    text.setString("GOD HIMSELF THANKS YOU FOR YOUR EFFORT.");
+    text.setString("GOD SMILES UPON YOU.");
     fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 316);
+    text.setPosition((640 - fr.width) / 2, 386);
+
+    rect.setPosition((640 - fr.width) / 2, 386);
+    rect.setSize(sf::Vector2f(fr.width, fr.height + 6));
+    renderTexture.draw(rect);
+
     renderTexture.draw(text);
 
     text.setString("THANKS FOR PLAYING THIS GAME.");
     fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 348);
+    text.setPosition((640 - fr.width) / 2, 418);
+
+    rect.setPosition((640 - fr.width) / 2, 418);
+    rect.setSize(sf::Vector2f(fr.width, fr.height + 6));
+    renderTexture.draw(rect);
+
     renderTexture.draw(text);
 }
 
 void draw_defeat_screen() {
+    sf::Sprite background;
+    background.setTexture(losing);
+    renderTexture.draw(background);
+
     sf::Text title;
-    title.setString("DEFEAT CUTSCRENE PLACEHOLDER");
+    title.setString("DEFEAT");
     title.setCharacterSize(28);
     title.setFillColor(sf::Color(255, 255, 255));
     title.setFont(font);
     sf::FloatRect fr = title.getLocalBounds();
-    title.setPosition((640 - fr.width) / 2, (480 - fr.height) / 2);
+    title.setPosition((640 - fr.width) / 2, 100);
     renderTexture.draw(title);
 
     sf::Sprite key_label;
     key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(10, 480 - 32);
-    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    //key_label.setColor(sf::Color(128, 128, 128, 255));
+    key_label.setScale(1.0f, 1.0f);
     renderTexture.draw(key_label);
 
     sf::Text text;
@@ -513,32 +543,43 @@ void draw_defeat_screen() {
     text.setPosition(10 + 32, 480 - 32);
     renderTexture.draw(text);
 
-    text.setString("IT SEEMS YOU HAVE COME TO AN END.");
-    fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 300);
-    renderTexture.draw(text);
-    text.setString("YOUR ATTEMPTS TO BUILD AN ARK AND SAVE");
-    fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 316);
-    renderTexture.draw(text);
-    text.setString("TWO OF EACH KIND OF ANIMAL WERE NOT");
-    fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 332);
-    renderTexture.draw(text);
-    text.setString("SUCCESSFUL.");
-    fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 348);
-    renderTexture.draw(text);
+    if (player->get_hearts() <= 0) {
+        text.setString("YOU WERE KILLED IN BATTLE.");
+        fr = text.getLocalBounds();
+        text.setPosition((640 - fr.width) / 2, 370);
+        renderTexture.draw(text);
+    } else if (game->get_turns_remaining() <= 0) {
+        text.setString("YOU RAN OUT OF TIME.");
+        fr = text.getLocalBounds();
+        text.setPosition((640 - fr.width) / 2, 370);
+        renderTexture.draw(text);
+    } else if (game->get_turns_remaining() <= 0) {
+        text.setString("THE ARK WAS DESTROYED BY NON-BELIEVERS.");
+        fr = text.getLocalBounds();
+        text.setPosition((640 - fr.width) / 2, 370);
+        renderTexture.draw(text);
+    } else {
+        text.setString("YOU WERE DEFEATED.");
+        fr = text.getLocalBounds();
+        text.setPosition((640 - fr.width) / 2, 370);
+        renderTexture.draw(text);
+    }
 
-    text.setString("THANKS FOR PLAYING THIS GAME.");
+    char tmp[16];
+    sprintf(tmp, "COINS: %d", player->get_coin_count());
+    text.setString(tmp);
     fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 380);
+    text.setPosition((640 - fr.width) / 2, 386);
     renderTexture.draw(text);
 }
 
 void draw_opening_curscene() {
+    sf::Sprite background;
+    background.setTexture(opening);
+    renderTexture.draw(background);
+
     sf::Text title;
-    title.setString("OPENING CUTSCRENE PLACEHOLDER");
+    title.setString("NOAH'S ARK");
     title.setCharacterSize(28);
     title.setFillColor(sf::Color(255, 255, 255));
     title.setFont(font);
@@ -549,8 +590,7 @@ void draw_opening_curscene() {
     sf::Sprite key_label;
     key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(10, 480 - 32);
-    key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
-    //key_label.setColor(sf::Color(128, 128, 128, 255));
+    key_label.setScale(1.0f, 1.0f);
     renderTexture.draw(key_label);
 
     sf::Text text;
@@ -558,36 +598,36 @@ void draw_opening_curscene() {
     text.setCharacterSize(14);
     text.setFillColor(sf::Color(255, 255, 255));
     text.setFont(font);
-    text.setPosition(10 + 32, 480 - 32);
+    text.setPosition(42, 480 - 32);
     renderTexture.draw(text);
 
-    text.setString("GOD HAS TOLD YOU TO MAKE AN ARK.");
+//    key_label.setTexture(textures.at(T_KEY_J));
+//    key_label.setPosition(144, 480 - 32);
+//    renderTexture.draw(key_label);
+//
+//    text.setString("SKIP");
+//    text.setPosition(176, 480 - 32);
+//    renderTexture.draw(text);
+
+    text.setCharacterSize(14);
+    text.setFillColor(sf::Color(0, 0, 0));
+    text.setFont(font);
+    text.setPosition(10 + 32, 480 - 32);
+    text.setString("GOD HAS SPOKEN TO YOU AND HE HAS TOLD YOU TO MAKE HIM A HUGE ARK.");
     fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 300);
+    text.setPosition((640 - fr.width) / 2, 0);
     renderTexture.draw(text);
-    text.setString("YOU MUST GET PLANKS TO BUILD IT.");
+    text.setString("YOU MUST BUILD IT FROM PLANKS AND PUT TWO OF EACH ANIMAL INSIDE.");
     fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 316);
+    text.setPosition((640 - fr.width) / 2, 16);
     renderTexture.draw(text);
-    text.setString("AND YOU MUST PUT TWO OF EACH ANIMAL");
+    text.setString("BE WARY OF THE LOCALS FOR THEY DO NOT LOVE YOUR GOD OR HIS WORKS.");
     fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 332);
+    text.setPosition((640 - fr.width) / 2, 32);
     renderTexture.draw(text);
-    text.setString("INSIDE OF THE ARK. WHEN THE TIMER");
+    text.setString("YOU MUST HURRY. ONCE TIME RUNS OUT THE WATERS WILL RISE.");
     fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 348);
-    renderTexture.draw(text);
-    text.setString("RUNS OUT THE WATERS WILL RISE.");
-    fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 364);
-    renderTexture.draw(text);
-    text.setString("BEWARE OF THE LOCALS FOR THEY ARE");
-    fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 380);
-    renderTexture.draw(text);
-    text.setString("NOT FOLLOWERS OF YOUR GOD.");
-    fr = text.getLocalBounds();
-    text.setPosition((640 - fr.width) / 2, 396);
+    text.setPosition((640 - fr.width) / 2, 48);
     renderTexture.draw(text);
 }
 
@@ -853,6 +893,19 @@ bool init_draw(void){
         exit(1010);
     }
 
+    // load cutscene images
+    if (!opening.loadFromFile("asset/opening.png")) {
+        std::cout << "ERROR: could not load opening cutscene!" << std::endl;
+        exit(1011);
+    }
+    if (!losing.loadFromFile("asset/losing.png")) {
+        std::cout << "ERROR: could not load opening cutscene!" << std::endl;
+        exit(1012);
+    }
+    if (!winning.loadFromFile("asset/winning.jpg")) {
+        std::cout << "ERROR: could not load opening cutscene!" << std::endl;
+        exit(1013);
+    }
     return true;
 }
 bool jumpwr_xyt(int x, int y, int t) { // tile coords

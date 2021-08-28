@@ -81,6 +81,11 @@ void GameManager::edit_timer_state(bool state) {
     input_timer.restart();
 }
 
+void GameManager::reset_timer() {
+    std::scoped_lock<std::mutex> lock(timer_mutex);
+    this->turns_remaining = 500;
+}
+
 void GameManager::alter_game_state(GameState new_state) {
     if (new_state == GameState::NORMAL_PLAY) {
         edit_timer_state(true);

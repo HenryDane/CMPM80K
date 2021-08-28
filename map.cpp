@@ -306,7 +306,8 @@ bool Map::is_collideable(uint32_t x, uint32_t y, bool is_player, bool _lock) {
         }
     } else if (t == 119 || t == 185 || t == 218) {
         // do nothing
-    } else if (t == 259 || t == 260 || t == 270 || t == 271 || t == 287) {
+    } else if (t == 259 || t == 260 || t == 270 || t == 271 || t == 287 ||
+               t == 211 || t == 212 || t == 222 || t == 223 || t == 286) {
         if (_lock) {
             mutex.unlock();
         }

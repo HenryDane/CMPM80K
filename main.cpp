@@ -58,7 +58,8 @@ int main() {
     player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
     game = new GameManager(); // this *should* alter the value of current_map
     active_dialogue = nullptr;
-    game->alter_game_state(GameManager::MAIN_MENU);
+//    game->alter_game_state(GameManager::MAIN_MENU);
+    game->alter_game_state(GameManager::OPEN_CUTSCENE);
 
     while (window.isOpen()) {
         window.clear();
@@ -233,11 +234,22 @@ bool process_key_play() {
         update_player(1, 0);
         pressed = true;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::J)) {
         if (player->get_held_item_texture() != T_EMPTY) {
             do_drop_item();
         } else {
             do_pickup_item();
+        }
+        pressed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
+        if (player->get_held_item_texture() == T_EMPTY &&
+            player->get_planks_count() > 0) {
+            player->set_planks_count(player->get_planks_count() - 1);
+            player->set_held_item_texture(T_PLANK);
+        } else if (player->get_held_item_texture() == T_PLANK) {
+            player->set_held_item_texture(T_EMPTY);
+            player->set_planks_count(player->get_planks_count() + 1);
         }
         pressed = true;
     }
@@ -254,7 +266,7 @@ bool process_key_play() {
 }
 
 bool process_key_menu() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
         if (current_menu_sel == 0) {
             // goto normal gameplay
             // TODO -- make sure this initalizes everything
@@ -273,12 +285,12 @@ bool process_key_menu() {
             trigger_sound(SAMPLETYPE::UI_SELECT);
             renderWindow->close();
         }
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
         // down
         trigger_sound(SAMPLETYPE::UI_CLICK);
         current_menu_sel++;
         current_menu_sel = current_menu_sel % 4;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         // up
         trigger_sound(SAMPLETYPE::UI_CLICK);
         current_menu_sel--;
@@ -292,11 +304,12 @@ bool process_key_menu() {
 }
 
 bool process_key_special() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
         if (game->get_game_state() == GameManager::OPEN_CUTSCENE) {
             // since were in opening, we go to normal
             game->alter_game_state(GameManager::NORMAL_PLAY);
             trigger_sound(SAMPLETYPE::UI_CLICK);
+            update_player(0,0); // awful hack to trigger initial dialogue
             // lock timer mutex and enable it
         } else {
             trigger_sound(SAMPLETYPE::UI_SELECT);
@@ -312,12 +325,12 @@ bool process_key_pause() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         game->alter_game_state(GameManager::NORMAL_PLAY);
         trigger_sound(SAMPLETYPE::UI_SELECT);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::J)) {
         // TODO save
         std::cout << "saved" << std::endl;
         game->alter_game_state(GameManager::CONFIRM_SAVE);
         trigger_sound(SAMPLETYPE::UI_CLICK);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
         // quit to menu
         game->alter_game_state(GameManager::CONFIRM_QUIT);
         trigger_sound(SAMPLETYPE::UI_CLICK);
@@ -331,7 +344,7 @@ bool process_key_pause() {
 }
 
 bool process_key_credits() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
         // quit to menu
         game->alter_game_state(GameManager::MAIN_MENU);
         trigger_sound(SAMPLETYPE::UI_CLICK);
@@ -342,7 +355,7 @@ bool process_key_credits() {
 }
 
 bool process_key_dialogue() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
         trigger_sound(SAMPLETYPE::UI_CLICK);
         dialogue_state++;
         if (dialogue_state >= active_dialogue->text.size()) {
@@ -353,7 +366,7 @@ bool process_key_dialogue() {
         } else {
             // more to go
         }
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::J)) {
         trigger_sound(SAMPLETYPE::UI_CLICK);
         active_dialogue = nullptr;
         dialogue_state = -1;
@@ -366,7 +379,7 @@ bool process_key_dialogue() {
 }
 
 bool process_key_save_notif() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
         game->alter_game_state(GameManager::PAUSED);
         trigger_sound(SAMPLETYPE::UI_CLICK);
     } else {
@@ -376,10 +389,10 @@ bool process_key_save_notif() {
 }
 
 bool process_key_confirm_quit() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
         game->alter_game_state(GameManager::MAIN_MENU);
         trigger_sound(SAMPLETYPE::UI_SELECT);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::J)) {
         game->alter_game_state(GameManager::PAUSED);
         trigger_sound(SAMPLETYPE::UI_CLICK);
     } else {
@@ -396,7 +409,7 @@ void reset_game_instance() {
     ark = new Ark(-1, -1);
     player = new Player(20, 20, 2); // TODO fix this (sign compare, hardcoded)
     game->initalize_map_data();
-
+    game->reset_timer();
     active_dialogue = nullptr;
     dialogue_state = 0;
 }

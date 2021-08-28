@@ -27,7 +27,10 @@
 #define T_KEY_A    82
 #define T_KEY_Z    86
 #define T_KEY_X    87
-#define T_KEY_C    56
+#define T_KEY_W    85
+#define T_KEY_S    83
+#define T_KEY_J    297
+#define T_KEY_K    298
 #define T_PLANK    62
 #define T_PLANKS   5
 #define T_RIGHT    75

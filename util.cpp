@@ -30,9 +30,9 @@ bool is_entity_pickupable(int e_type) {
     if (e_type >= 12 && e_type <= 15) {
         return true;
     }
-    if (e_type == E_PLANKS) {
-        return true;
-    }
+//    if (e_type == E_PLANKS) {
+//        return true;
+//    }
     return false;
 }
 int get_entity_type_from_texture(int t) {

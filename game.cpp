@@ -102,11 +102,30 @@ void do_pickup_item() {
     int px = player->get_x();
     int py = player->get_y();
 
+    Entity* entity_l = current_map->check_entity_collision(px, py);
     Entity* entity_w = current_map->check_entity_collision(px - 1, py);
     Entity* entity_e = current_map->check_entity_collision(px + 1, py);
     Entity* entity_n = current_map->check_entity_collision(px, py - 1);
     Entity* entity_s = current_map->check_entity_collision(px, py + 1);
 
+    if (entity_l != nullptr) {
+        if (is_entity_pickupable(entity_l->get_type())) {
+            player->set_held_item_texture(entity_l->get_texture());
+            if (entity_l->get_type() == E_PLANKS) {
+                trigger_sound(SAMPLETYPE::WOOD_COLLECT);
+            } else if (entity_l->get_type() == E_PIG) {
+                trigger_sound(SAMPLETYPE::PIG_COLLECT);
+            } else if (entity_l->get_type() == E_COW) {
+                trigger_sound(SAMPLETYPE::COW_COLLECT);
+            } else if (entity_l->get_type() == E_SHEEP) {
+                trigger_sound(SAMPLETYPE::SHEEP_COLLECT);
+            } else if (entity_l->get_type() == E_CHICKEN) {
+                trigger_sound(SAMPLETYPE::CHICKEN_COLLECT);
+            }
+            entity_l->set_type(-1);
+            return;
+        }
+    }
     if (entity_n != nullptr) {
         if (is_entity_pickupable(entity_n->get_type())) {
             player->set_held_item_texture(entity_n->get_texture());

@@ -244,19 +244,19 @@ void draw_main_menu() {
     renderTexture.draw(title);
 
     sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setTexture(textures.at(T_KEY_W));
     key_label.setPosition(10, 480 - 32);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     //key_label.setColor(sf::Color(128, 128, 128, 255));
     renderTexture.draw(key_label);
 
     //sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_Z));
+    key_label.setTexture(textures.at(T_KEY_S));
     key_label.setPosition(10 + 80, 480 - 32);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderTexture.draw(key_label);
 
-    key_label.setTexture(textures.at(T_KEY_A));
+    key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(10 + 180, 480 - 32);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderTexture.draw(key_label);
@@ -332,7 +332,7 @@ void draw_credits() {
     renderTexture.draw(title);
 
     sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(10, 480 - 32);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     //key_label.setColor(sf::Color(128, 128, 128, 255));
@@ -459,7 +459,7 @@ void draw_victory_screen() {
     renderTexture.draw(title);
 
     sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(10, 480 - 32);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     //key_label.setColor(sf::Color(128, 128, 128, 255));
@@ -499,7 +499,7 @@ void draw_defeat_screen() {
     renderTexture.draw(title);
 
     sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(10, 480 - 32);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     //key_label.setColor(sf::Color(128, 128, 128, 255));
@@ -547,7 +547,7 @@ void draw_opening_curscene() {
     renderTexture.draw(title);
 
     sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(10, 480 - 32);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     //key_label.setColor(sf::Color(128, 128, 128, 255));
@@ -642,13 +642,13 @@ void draw_pause_menu() {
     renderTexture.draw(key_label);
 
     //sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_Z));
+    key_label.setTexture(textures.at(T_KEY_J));
     key_label.setPosition(213 + 10, 160+52);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderTexture.draw(key_label);
 
     //sf::Sprite key_label;
-    key_label.setTexture(textures.at(T_KEY_X));
+    key_label.setTexture(textures.at(T_KEY_K));
     key_label.setPosition(213 + 10, 160+84);
     key_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderTexture.draw(key_label);
@@ -690,7 +690,7 @@ void draw_save_notif() {
     renderTexture.draw(notif);
 
     sf::Sprite key_skip_label;
-    key_skip_label.setTexture(textures.at(T_KEY_X));
+    key_skip_label.setTexture(textures.at(T_KEY_K));
     key_skip_label.setPosition(468, 428);
     key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderTexture.draw(key_skip_label);
@@ -718,7 +718,7 @@ void draw_quit_confirm() {
     renderTexture.draw(notif);
 
     sf::Sprite key_skip_label;
-    key_skip_label.setTexture(textures.at(T_KEY_X));
+    key_skip_label.setTexture(textures.at(T_KEY_K));
     key_skip_label.setPosition(468+32, 428);
     key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderTexture.draw(key_skip_label);
@@ -727,7 +727,7 @@ void draw_quit_confirm() {
     notif.setPosition(468+24+32, 428);
     renderTexture.draw(notif);
 
-    key_skip_label.setTexture(textures.at(T_KEY_Z));
+    key_skip_label.setTexture(textures.at(T_KEY_J));
     key_skip_label.setPosition(468+32-96, 428);
     renderTexture.draw(key_skip_label);
 
@@ -778,7 +778,7 @@ void draw_dialogue() {
     renderTexture.draw(skip_label);
 
     sf::Sprite key_next_label;
-    key_next_label.setTexture(textures.at(T_KEY_Z));
+    key_next_label.setTexture(textures.at(T_KEY_J));
     key_next_label.setPosition(512, 428);
     key_next_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderTexture.draw(key_next_label);
@@ -788,7 +788,7 @@ void draw_dialogue() {
     renderTexture.draw(skip_label);
 
     sf::Sprite key_skip_label;
-    key_skip_label.setTexture(textures.at(T_KEY_X));
+    key_skip_label.setTexture(textures.at(T_KEY_K));
     key_skip_label.setPosition(398, 428);
     key_skip_label.setScale(1.0f, 1.0f); // (128 / 4) = 32
     renderTexture.draw(key_skip_label);

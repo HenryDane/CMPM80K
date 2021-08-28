@@ -28,6 +28,7 @@ public:
 
     void mark_portal(Portal* portal);
     void update();
+    void reset_timer();
 
     void initalize_map_data();
     void destroy_map_data();
